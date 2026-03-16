@@ -1,0 +1,12 @@
+insert:
+INSERT INTO diva_user_permissions (permission_id, user_id, granted_by, granted, granted_at, expires_at)
+VALUES (?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE diva_user_permissions
+SET granted = ?, expires_at = ?, updated_at = NOW()
+WHERE permission_id = ? AND user_id = ?;
+
+delete:
+DELETE FROM diva_user_permissions
+WHERE permission_id = ? AND user_id = ?;

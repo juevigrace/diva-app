@@ -1,0 +1,7 @@
+insert:
+INSERT INTO diva_follow (user_id, followed)
+VALUES (?, ?);
+
+delete:
+DELETE FROM diva_follow
+WHERE user_id = ? AND followed = ?;

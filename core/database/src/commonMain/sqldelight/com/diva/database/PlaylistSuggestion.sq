@@ -1,0 +1,8 @@
+insert:
+INSERT INTO diva_playlist_suggestions (collection_id, suggester_id, media_id, status)
+VALUES (?, ?, ?, ?);
+
+update:
+UPDATE diva_playlist_suggestions
+SET status = ?
+WHERE collection_id = ? AND suggester_id = ? AND media_id = ?;

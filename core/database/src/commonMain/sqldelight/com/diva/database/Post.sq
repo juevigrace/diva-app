@@ -1,0 +1,39 @@
+count:
+SELECT COUNT(*)
+FROM diva_post
+WHERE deleted_at IS NULL;
+
+insert:
+INSERT INTO diva_post (id, author_id, text, visibility)
+VALUES (?, ?, ?, ?);
+
+delete:
+UPDATE diva_post 
+SET deleted_at = (strftime('%s', 'now')) 
+WHERE id = ? AND deleted_at IS NULL;
+
+findOneById:
+SELECT 
+  id,
+  author_id AS authorId,
+  text,
+  visibility,
+  created_at AS createdAt,
+  updated_at AS updatedAt,
+  deleted_at AS deletedAt
+FROM diva_post
+WHERE id = ? AND deleted_at IS NULL;
+
+findAll:
+SELECT 
+  id,
+  author_id AS authorId,
+  text,
+  visibility,
+  created_at AS createdAt,
+  updated_at AS updatedAt,
+  deleted_at AS deletedAt
+FROM diva_post
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT ? OFFSET ?;

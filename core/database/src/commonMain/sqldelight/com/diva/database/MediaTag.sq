@@ -1,0 +1,12 @@
+insert:
+INSERT INTO diva_media_tag (media_id, tag_id)
+VALUES (?, ?);
+
+update:
+UPDATE diva_media_tag 
+SET media_id = ?, tag_id = ? 
+WHERE media_id = ? AND tag_id = ?;
+
+delete:
+DELETE FROM diva_media_tag 
+WHERE media_id = ? AND tag_id = ?;

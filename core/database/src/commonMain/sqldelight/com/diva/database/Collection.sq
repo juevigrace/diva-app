@@ -1,0 +1,28 @@
+count:
+SELECT COUNT(*)
+FROM diva_collection
+WHERE deleted_at IS NULL;
+
+insert:
+INSERT INTO diva_collection (id, owner, cover_media_id, name, description, collection_type, visibility)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE diva_collection 
+SET cover_media_id = ?, name = ?, description = ?, visibility = ?, updated_at = (strftime('%s', 'now'))
+WHERE id = ? AND deleted_at IS NULL;
+
+delete:
+UPDATE diva_collection 
+SET deleted_at = (strftime('%s', 'now')) 
+WHERE id = ? AND deleted_at IS NULL;
+
+findOneById:
+SELECT id, owner, cover_media_id AS coverMediaId, name, description, collection_type AS collectionType, visibility, created_at AS createdAt, updated_at AS updatedAt, deleted_at AS deletedAt FROM diva_collection 
+WHERE id = ? AND deleted_at IS NULL;
+
+findAll:
+SELECT id, owner, cover_media_id AS coverMediaId, name, description, collection_type AS collectionType, visibility, created_at AS createdAt, updated_at AS updatedAt, deleted_at AS deletedAt FROM diva_collection 
+WHERE deleted_at IS NULL 
+ORDER BY created_at DESC
+LIMIT ? OFFSET ?;

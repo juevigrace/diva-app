@@ -1,0 +1,12 @@
+insert:
+INSERT INTO diva_collection_media (collection_id, media_id, position, added_by, score)
+VALUES (?, ?, ?, ?, ?);
+
+update:
+UPDATE diva_collection_media
+SET position = ?, score = ?
+WHERE collection_id = ? AND media_id = ?;
+
+delete:
+DELETE FROM diva_collection_media
+WHERE collection_id = ? AND media_id = ?;

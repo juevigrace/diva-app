@@ -1,0 +1,83 @@
+<resources>
+    <string name="app">Diva App</string>
+    <!--DESCRIPTIONS-->
+    <string name="logo">Logo</string>
+    <string name="go_back">Ir atrás</string>
+    <string name="next">Siguiente</string>
+    <string name="previous">Anterior</string>
+    <string name="skip">Saltar</string>
+    <!--GENERIC TEXTS-->
+    <string name="get_started">Empezar</string>
+    <!--AUTH-->
+    <string name="sign_in">Iniciar Sesión</string>
+    <string name="sign_up">Registrarse</string>
+    <string name="email_or_username">Correo o Nombre de Usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu Contraseña?</string>
+    <string name="reset_password">Restablecer Contraseña</string>
+    <string name="send_verification_code">Enviar Código de Verificación</string>
+    <string name="verification_code">Código de Verificación</string>
+    <string name="verification_code_placeholder">Ingresa el código</string>
+    <string name="back">Atrás</string>
+    <string name="verification_code_sent">Código de verificación enviado a tu correo</string>
+    <string name="password_reset_success">Contraseña restablecida exitosamente</string>
+    <string name="or_continue_with">O continuar con</string>
+    <string name="google">Google</string>
+    <string name="facebook">Facebook</string>
+    <string name="twitter">Twitter</string>
+    <string name="dont_have_account">¿No tienes una cuenta?</string>
+    <string name="already_have_account">¿Ya tienes una cuenta?</string>
+    <string name="show_password">Mostrar contraseña</string>
+    <string name="hide_password">Ocultar contraseña</string>
+    <string name="first_name">Nombre</string>
+    <string name="last_name">Apellido</string>
+    <string name="email">Correo</string>
+    <string name="username">Usuario</string>
+    <string name="alias">Alias</string>
+    <string name="phone">Teléfono</string>
+    <string name="birth_date">Fecha de Nacimiento</string>
+    <string name="confirm_password">Confirmar Contraseña</string>
+    <string name="terms_and_conditions">Acepto los Términos y Condiciones</string>
+    <string name="privacy_policy">Acepto la Política de Privacidad</string>
+    <string name="password_mismatch">Las contraseñas no coinciden</string>
+    <string name="ok">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <!--PLACEHOLDERS-->
+    <string name="email_placeholder">ejemplo@correo.com</string>
+    <string name="username_placeholder">juan123</string>
+    <string name="alias_placeholder">juan123</string>
+    <string name="phone_placeholder">1234567890</string>
+    <string name="password_placeholder">••••••••</string>
+    <string name="confirm_password_placeholder">••••••••</string>
+    <!--VALIDATION-->
+    <string name="field_required">Este campo es obligatorio</string>
+    <string name="invalid_phone_number">El teléfono debe contener solo números</string>
+    <string name="username_too_short">El usuario debe tener al menos 3 caracteres</string>
+    <string name="invalid_email">Por favor ingresa un correo válido</string>
+    <string name="password_too_short">La contraseña debe tener al menos 4 caracteres</string>
+    <string name="terms_required">Debes aceptar los Términos y Condiciones</string>
+    <string name="privacy_required">Debes aceptar la Política de Privacidad</string>
+    <!--ERRORS-->
+    <string name="error_database_duplicated">El registro ya existe</string>
+    <string name="error_database_no_rows_affected">No se realizaron cambios en la base de datos</string>
+    <string name="error_unknown">Ocurrió un error desconocido</string>
+    <string name="error_not_implemented">Esta función no está implementada</string>
+    <string name="error_network">Ocurrió un error de red</string>
+    <string name="error_no_connection">Sin conexión a internet</string>
+    <string name="error_timeout">La solicitud expiró</string>
+    <string name="error_validation_expired">El valor ha expirado</string>
+    <string name="error_validation_missing_value">Falta el valor requerido</string>
+    <string name="error_validation_parse">Error al analizar el valor</string>
+    <string name="error_validation_unexpected_value">Valor inesperado proporcionado</string>
+    <string name="error_validation_used">Este valor ya está en uso</string>
+    <string name="error_verification_action_not_triggered">No se pudo activar la acción de verificación. Por favor contacta a soporte.</string>
+    <!--SPECIFIC APP TEXT-->
+    <string name="onboarding_social_title">Conectar con Redes Sociales</string>
+    <string name="onboarding_social_description">Comparte momentos, sigue a amigos y descubre contenido tendencia de todo el mundo.</string>
+    <string name="onboarding_personalize_title">Personaliza tu Perfil</string>
+    <string name="onboarding_personalize_description">Personaliza tu perfil con fotos, biografía y estilo único para expresarte.</string>
+    <string name="onboarding_chat_title">Chatea e Interactúa</string>
+    <string name="onboarding_chat_description">Envía mensajes a amigos, únete a grupos y mantente conectado en cualquier momento y lugar.</string>
+    <string name="onboarding_get_started_title">Empezar</string>
+    <string name="onboarding_get_started_description">¿Listo para explorar todas las funciones? Inicia sesión para comenzar tu viaje.</string>
+</resources>

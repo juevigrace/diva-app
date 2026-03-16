@@ -1,0 +1,85 @@
+<resources>
+    <string name="app">Diva App</string>
+    <!--DESCRIPTIONS-->
+    <string name="logo">Logo</string>
+    <string name="go_back">Go back</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="skip">Skip</string>
+    <!--GENERIC TEXTS-->
+    <string name="get_started">Get Started</string>
+    <!--AUTH-->
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="email_or_username">Email or Username</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="send_verification_code">Send Verification Code</string>
+    <string name="verification_code">Verification Code</string>
+    <string name="verification_code_placeholder">Enter code</string>
+    <string name="verification_code_description">Enter the verification code sent to your email</string>
+    <string name="verify">Verify</string>
+    <string name="back">Back</string>
+    <string name="verification_code_sent">Verification code sent to your email</string>
+    <string name="password_reset_success">Password reset successfully</string>
+    <string name="or_continue_with">Or continue with</string>
+    <string name="google">Google</string>
+    <string name="facebook">Facebook</string>
+    <string name="twitter">Twitter</string>
+    <string name="dont_have_account">Don't have an account?</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="email">Email</string>
+    <string name="username">Username</string>
+    <string name="alias">Alias</string>
+    <string name="phone">Phone</string>
+    <string name="birth_date">Birth Date</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="terms_and_conditions">I accept the Terms and Conditions</string>
+    <string name="privacy_policy">I accept the Privacy Policy</string>
+    <string name="password_mismatch">Passwords do not match</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <!--PLACEHOLDERS-->
+    <string name="email_placeholder">example@email.com</string>
+    <string name="username_placeholder">johndoe</string>
+    <string name="alias_placeholder">johndoe</string>
+    <string name="phone_placeholder">1234567890</string>
+    <string name="password_placeholder">••••••••</string>
+    <string name="confirm_password_placeholder">••••••••</string>
+    <!--VALIDATION-->
+    <string name="field_required">This field is required</string>
+    <string name="invalid_phone_number">Phone number must contain only numbers</string>
+    <string name="username_too_short">Username must be at least 3 characters</string>
+    <string name="invalid_email">Please enter a valid email address</string>
+    <string name="password_too_short">Password must be at least 4 characters</string>
+    <string name="terms_required">You must accept the Terms and Conditions</string>
+    <string name="privacy_required">You must accept the Privacy Policy</string>
+    <!--ERRORS-->
+    <string name="error_database_duplicated">Record already exists</string>
+    <string name="error_database_no_rows_affected">No changes made to database</string>
+    <string name="error_unknown">An unknown error occurred</string>
+    <string name="error_not_implemented">This feature is not implemented</string>
+    <string name="error_network">Network error occurred</string>
+    <string name="error_no_connection">No internet connection</string>
+    <string name="error_timeout">Request timed out</string>
+    <string name="error_validation_expired">The value has expired</string>
+    <string name="error_validation_missing_value">Required value is missing</string>
+    <string name="error_validation_parse">Failed to parse value</string>
+    <string name="error_validation_unexpected_value">Unexpected value provided</string>
+    <string name="error_validation_used">This value is already in use</string>
+    <string name="error_verification_action_not_triggered">Verification action could not be triggered. Please contact support.</string>
+    <!--SPECIFIC APP TEXT-->
+    <string name="onboarding_social_title">Connect with Social &amp; Media</string>
+    <string name="onboarding_social_description">Share moments, follow friends, and discover trending content from around the world.</string>
+    <string name="onboarding_personalize_title">Personalize Your Profile</string>
+    <string name="onboarding_personalize_description">Customize your profile with photos, bio, and unique style to express yourself.</string>
+    <string name="onboarding_chat_title">Chat &amp; Interact</string>
+    <string name="onboarding_chat_description">Message friends, join groups, and stay connected anytime, anywhere.</string>
+    <string name="onboarding_get_started_title">Get Started</string>
+    <string name="onboarding_get_started_description">Ready to explore all features? Sign in to begin your journey!</string>
+</resources>

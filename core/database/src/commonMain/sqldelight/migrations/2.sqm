@@ -1,0 +1,109 @@
+import com.diva.models.ModerationStatus;
+import com.diva.models.VisibilityType;
+import com.diva.models.collection.CollectionType;
+import com.diva.models.media.MediaType;
+import kotlin.Boolean;
+
+CREATE TABLE IF NOT EXISTS diva_media(
+    id TEXT NOT NULL PRIMARY KEY,
+    submitted_by TEXT NOT NULL,
+    url TEXT NOT NULL,
+    alt_text TEXT NOT NULL DEFAULT '',
+    media_type TEXT AS MediaType NOT NULL,
+    file_size INTEGER NOT NULL,
+    width INTEGER NOT NULL DEFAULT 0,
+    height INTEGER NOT NULL DEFAULT 0,
+    duration INTEGER NOT NULL DEFAULT 0,
+    visibility TEXT AS VisibilityType NOT NULL,
+    sensitive_content INTEGER AS Boolean NOT NULL DEFAULT 0,
+    adult_content INTEGER AS Boolean NOT NULL DEFAULT 0,
+    published_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    deleted_at INTEGER DEFAULT NULL,
+    FOREIGN KEY(submitted_by) REFERENCES diva_user(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS diva_tag(
+    id TEXT NOT NULL PRIMARY KEY,
+    tag_name TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    deleted_at INTEGER DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS diva_media_tag(
+    media_id TEXT NOT NULL,
+    tag_id TEXT NOT NULL,
+    PRIMARY KEY (media_id, tag_id),
+    FOREIGN KEY(media_id) REFERENCES diva_media(id) ON DELETE CASCADE,
+    FOREIGN KEY(tag_id) REFERENCES diva_tag(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS diva_collection(
+    id TEXT NOT NULL PRIMARY KEY,
+    owner TEXT NOT NULL,
+    cover_media_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    collection_type TEXT AS CollectionType NOT NULL,
+    visibility TEXT AS VisibilityType NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    deleted_at INTEGER DEFAULT NULL,
+    FOREIGN KEY(owner) REFERENCES diva_user(id) ON DELETE RESTRICT,
+    FOREIGN KEY(cover_media_id) REFERENCES diva_media(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS diva_collection_media(
+    collection_id TEXT NOT NULL,
+    media_id TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    added_by TEXT NOT NULL,
+    score REAL NOT NULL DEFAULT 0.0,
+    added_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY(collection_id) REFERENCES diva_collection(id) ON DELETE CASCADE,
+    FOREIGN KEY(media_id) REFERENCES diva_media(id) ON DELETE CASCADE,
+    FOREIGN KEY(added_by) REFERENCES diva_user(id) ON DELETE CASCADE,
+    PRIMARY KEY (collection_id, media_id)
+);
+
+CREATE TABLE IF NOT EXISTS diva_playlist_metadata(
+    collection_id TEXT NOT NULL PRIMARY KEY,
+    is_collaborative INTEGER AS Boolean NOT NULL DEFAULT 0,
+    allow_suggestions INTEGER AS Boolean NOT NULL DEFAULT 1,
+    FOREIGN KEY(collection_id) REFERENCES diva_collection(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS diva_playlist_contributor(
+    collection_id TEXT NOT NULL,
+    contributor_id TEXT NOT NULL,
+    FOREIGN KEY(contributor_id) REFERENCES diva_user(id),
+    FOREIGN KEY(collection_id) REFERENCES diva_collection(id) ON DELETE CASCADE,
+    PRIMARY KEY (collection_id, contributor_id)
+);
+
+CREATE TABLE IF NOT EXISTS diva_playlist_suggestions(
+    id TEXT NOT NULL PRIMARY KEY,
+    collection_id TEXT NOT NULL,
+    suggester_id TEXT NOT NULL,
+    media_id TEXT NOT NULL,
+    status TEXT AS ModerationStatus NOT NULL,
+    suggested_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY(media_id) REFERENCES diva_media(id),
+    FOREIGN KEY(suggester_id) REFERENCES diva_user(id),
+    FOREIGN KEY(collection_id) REFERENCES diva_collection(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS diva_mix_metadata(
+    collection_id TEXT NOT NULL PRIMARY KEY,
+    algorithm_type TEXT NOT NULL DEFAULT 'trending',
+    time_window_hours INTEGER NOT NULL DEFAULT 24,
+    content_weight REAL NOT NULL DEFAULT 0.7,
+    freshness_weight REAL NOT NULL DEFAULT 0.3,
+    min_engagement_score INTEGER NOT NULL DEFAULT 10,
+    excluded_tags TEXT NOT NULL DEFAULT '',
+    auto_refresh INTEGER NOT NULL DEFAULT 1,
+    refresh_interval_seconds INTEGER NOT NULL DEFAULT 3600,
+    FOREIGN KEY(collection_id) REFERENCES diva_collection(id) ON DELETE CASCADE
+);

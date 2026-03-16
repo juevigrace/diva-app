@@ -1,0 +1,36 @@
+import com.diva.models.VisibilityType;
+
+CREATE TABLE IF NOT EXISTS diva_follow(
+    user_id TEXT NOT NULL,
+    followed TEXT NOT NULL,
+    followed_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    PRIMARY KEY (user_id, followed),
+    FOREIGN KEY(user_id) REFERENCES diva_user(id) ON DELETE CASCADE,
+    FOREIGN KEY(followed) REFERENCES diva_user(id) ON DELETE CASCADE,
+    CHECK (user_id != followed)
+);
+
+CREATE TABLE IF NOT EXISTS diva_post(
+    id TEXT NOT NULL PRIMARY KEY,
+    author_id TEXT NOT NULL,
+    text TEXT NOT NULL DEFAULT '',
+    visibility TEXT AS VisibilityType NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    deleted_at INTEGER DEFAULT NULL,
+    FOREIGN KEY(author_id) REFERENCES diva_user(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS diva_post_attachment(
+    id TEXT NOT NULL PRIMARY KEY,
+    post_id TEXT NOT NULL,
+    media_id TEXT DEFAULT NULL,
+    collection_id TEXT DEFAULT NULL,
+    FOREIGN KEY(post_id) REFERENCES diva_post(id) ON DELETE RESTRICT,
+    FOREIGN KEY(media_id) REFERENCES diva_media(id) ON DELETE RESTRICT,
+    FOREIGN KEY(collection_id) REFERENCES diva_collection(id) ON DELETE RESTRICT,
+    CONSTRAINT attachment_type CHECK (
+        (media_id IS NOT NULL AND collection_id IS NULL) OR
+        (media_id IS NULL AND collection_id IS NOT NULL)
+    )
+);

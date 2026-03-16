@@ -1,0 +1,12 @@
+insert:
+INSERT INTO diva_playlist_contributor (collection_id, contributor_id)
+VALUES (?, ?);
+
+update:
+UPDATE diva_playlist_contributor
+SET collection_id = ?, contributor_id = ?
+WHERE collection_id = ? AND contributor_id = ?;
+
+delete:
+DELETE FROM diva_playlist_contributor
+WHERE collection_id = ? AND contributor_id = ?;

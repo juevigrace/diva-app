@@ -1,0 +1,32 @@
+insert:
+INSERT INTO diva_message (id, chat_id, sender_id, content, message_type, reply_to_id)
+VALUES (?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE diva_message 
+SET content = ?, edited_at = (strftime('%s', 'now')), updated_at = (strftime('%s', 'now')) 
+WHERE id = ? AND deleted_at IS NULL;
+
+delete:
+UPDATE diva_message 
+SET deleted_at = (strftime('%s', 'now')) 
+WHERE id = ? AND deleted_at IS NULL;
+
+findyId:
+SELECT id, chat_id AS chatId, sender_id AS senderId, content, message_type AS messageType, reply_to_id AS replyToId, created_at AS createdAt, updated_at AS updatedAt, deleted_at AS deletedAt, edited_at AS editedAt FROM diva_message 
+WHERE id = ? AND deleted_at IS NULL;
+
+findAll:
+SELECT id, chat_id AS chatId, sender_id AS senderId, content, message_type AS messageType, reply_to_id AS replyToId, created_at AS createdAt, updated_at AS updatedAt, deleted_at AS deletedAt, edited_at AS editedAt FROM diva_message 
+WHERE deleted_at IS NULL 
+ORDER BY created_at DESC;
+
+findByChat:
+SELECT id, chat_id AS chatId, sender_id AS senderId, content, message_type AS messageType, reply_to_id AS replyToId, created_at AS createdAt, updated_at AS updatedAt, deleted_at AS deletedAt, edited_at AS editedAt FROM diva_message 
+WHERE chat_id = ? AND deleted_at IS NULL 
+ORDER BY created_at ASC;
+
+findBySender:
+SELECT id, chat_id AS chatId, sender_id AS senderId, content, message_type AS messageType, reply_to_id AS replyToId, created_at AS createdAt, updated_at AS updatedAt, deleted_at AS deletedAt, edited_at AS editedAt FROM diva_message 
+WHERE sender_id = ? AND deleted_at IS NULL 
+ORDER BY created_at DESC;

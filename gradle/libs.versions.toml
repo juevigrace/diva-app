@@ -1,0 +1,114 @@
+[versions]
+app-version-name = "1.0.0"
+app-version-code = "1"
+agp = "9.0.1"
+android-compileSdk = "36"
+android-targetSdk = "36"
+android-minSdk = "24"
+compose-hot-reload = "1.0.0"
+compose-multiplatform = "1.10.2"
+diva = "0.0.15"
+koin = "4.1.1"
+kotlin = "2.3.10"
+kotlinx-coroutines = "1.10.2"
+kotlinx-serialization = "1.10.0"
+ktor = "3.4.1"
+sqldelight = "2.2.1"
+kbcrypt = "1.0.9"
+resend = "4.12.0"
+sqlite = "3.45.3.0"
+postgresql = "42.7.10"
+secrets = "2.0.1"
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-hot-reload = { id = "org.jetbrains.compose.hot-reload", version.ref = "compose-hot-reload" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+secrets-gradle = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+
+[libraries]
+######### [TEST DEPENDENCIES] #########
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+
+######### [DIVA DEPENDENCIES] #########
+diva-core = { group = "io.github.juevigrace", name = "diva-core", version.ref = "diva" }
+diva-database = { group = "io.github.juevigrace", name = "diva-database", version.ref = "diva" }
+diva-network-client = { group = "io.github.juevigrace", name = "diva-network-client", version.ref = "diva" }
+diva-ui = { group = "io.github.juevigrace", name = "diva-ui", version.ref = "diva" }
+
+######### [GRADLE DEPENDENCIES] #########
+
+secrets-gradle = { group = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", name = "secrets-gradle-plugin", version.ref = "secrets" }
+android-tools-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+compose-compiler-gradle-plugin = { module = "org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin", version.ref = "kotlin" }
+jetbrains-compose-gradle-plugin = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "compose-multiplatform" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-serialization-gradle-plugin = { module = "org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlin" }
+
+######### [KOIN DEPENDENCIES] #########
+
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
+koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
+
+######### [SQLDELIGHT DEPENDENCIES] #########
+
+sqldelight-postgres-dialect = { group = "app.cash.sqldelight", name = "postgresql-dialect", version.ref = "sqldelight" }
+
+######### [KOTLIN/KOTLINX DEPENDENCIES] #########
+
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+
+######### [COMPOSE DEPENDENCIES] #########
+
+compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose-multiplatform" }
+compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "compose-multiplatform" }
+
+######### [KTOR SERVER DEPENDENCIES] #########
+
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-host-common = { module = "io.ktor:ktor-server-host-common", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-sse = { module = "io.ktor:ktor-server-sse", version.ref = "ktor" }
+ktor-server-request-validation = { module = "io.ktor:ktor-server-request-validation", version.ref = "ktor" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt", version.ref = "ktor" }
+ktor-server-forwarded-header = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor" }
+ktor-server-default-headers = { module = "io.ktor:ktor-server-default-headers", version.ref = "ktor" }
+ktor-server-html = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
+ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktor" }
+ktor-server-caching-headers = { module = "io.ktor:ktor-server-caching-headers", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor" }
+
+######### [ENCRYPTION DEPENDENCIES] #########
+
+kbcrypt = { group = "com.ToxicBakery.library.bcrypt", name = "bcrypt", version.ref = "kbcrypt" }
+
+######### [MAIL DEPENDENCIES] #########
+
+resend = { group = "com.resend", name = "resend-java", version.ref = "resend" }
+
+######### [DRIVER DEPENDENCIES] #########
+
+sqlite = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlite" }
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
