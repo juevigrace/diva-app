@@ -1,10 +1,10 @@
 package com.diva.user.api.client
 
 import com.diva.models.api.ApiResponse
-import com.diva.models.api.PaginationResponse
-import com.diva.models.api.auth.dtos.PasswordUpdateDto
+import com.diva.models.api.pagination.response.PaginationResponse
+import com.diva.models.api.auth.forgot.password.dtos.UpdatePasswordDto
 import com.diva.models.api.user.dtos.CreateUserDto
-import com.diva.models.api.user.dtos.EmailTokenDto
+import com.diva.models.api.verification.dtos.EmailTokenDto
 import com.diva.models.api.user.dtos.UpdateUserDto
 import com.diva.models.api.user.dtos.UserEmailDto
 import com.diva.models.api.user.preferences.dtos.UserPreferencesDto
@@ -41,7 +41,7 @@ interface UserNetworkClient {
     suspend fun deleteMe(token: String): DivaResult<Unit, DivaError>
     suspend fun forgotPasswordRequest(dto: UserEmailDto): DivaResult<Unit, DivaError>
     suspend fun forgotPasswordConfirm(dto: EmailTokenDto): DivaResult<Unit, DivaError>
-    suspend fun forgotPasswordReset(dto: PasswordUpdateDto, token: String): DivaResult<Unit, DivaError>
+    suspend fun forgotPasswordReset(dto: UpdatePasswordDto, token: String): DivaResult<Unit, DivaError>
     suspend fun requestEmailUpdate(
         dto: UserEmailDto,
         token: String
@@ -511,7 +511,7 @@ class UserNetworkClientImpl(
     }
 
     override suspend fun forgotPasswordReset(
-        dto: PasswordUpdateDto,
+        dto: UpdatePasswordDto,
         token: String
     ): DivaResult<Unit, DivaError> {
         return tryResult(

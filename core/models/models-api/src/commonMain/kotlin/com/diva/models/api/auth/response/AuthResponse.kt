@@ -1,6 +1,7 @@
 package com.diva.models.api.auth.response
 
-import com.diva.models.api.action.ActionResponse
+import com.diva.models.api.action.response.ActionResponse
+import com.diva.models.api.auth.session.response.SessionResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

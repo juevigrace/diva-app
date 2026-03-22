@@ -1,11 +1,11 @@
 package com.diva.models.actions
 
-import com.diva.models.api.action.ActionResponse
+import com.diva.models.api.action.response.ActionResponse
 import io.github.juevigrace.diva.core.errors.DivaAction
 
-
 enum class Actions {
-    EMAIL_VERIFICATION,
+    USER_VERIFICATION,
+    PASSWORD_VERIFICATION,
     UNKNOWN,
 }
 
@@ -13,8 +13,13 @@ sealed class AppActions(
     override val key: String,
     override val required: Boolean
 ) : DivaAction {
-    object EmailVerification : AppActions(
-        Actions.EMAIL_VERIFICATION.name,
+    object UserVerification : AppActions(
+        Actions.USER_VERIFICATION.name,
+        true
+    )
+
+    object PasswordVerification : AppActions(
+        Actions.PASSWORD_VERIFICATION.name,
         true
     )
 
@@ -26,7 +31,8 @@ sealed class AppActions(
     companion object {
         fun fromAction(action: Actions): AppActions {
             return when (action) {
-                Actions.EMAIL_VERIFICATION -> EmailVerification
+                Actions.USER_VERIFICATION -> UserVerification
+                Actions.PASSWORD_VERIFICATION -> PasswordVerification
                 Actions.UNKNOWN -> Unknown
             }
         }

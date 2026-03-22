@@ -1,11 +1,11 @@
 package com.diva.auth.data.api.client
 
 import com.diva.models.api.ApiResponse
-import com.diva.models.api.auth.dtos.SessionDataDto
-import com.diva.models.api.auth.dtos.SignInDto
-import com.diva.models.api.auth.dtos.SignUpDto
+import com.diva.models.api.auth.session.dtos.SessionDataDto
+import com.diva.models.api.auth.signin.dto.SignInDto
+import com.diva.models.api.auth.signup.dto.SignUpDto
 import com.diva.models.api.auth.response.AuthResponse
-import com.diva.models.api.auth.response.SessionResponse
+import com.diva.models.api.auth.session.response.SessionResponse
 import io.github.juevigrace.diva.core.DivaResult
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.errors.DivaError

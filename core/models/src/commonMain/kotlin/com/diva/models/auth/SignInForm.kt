@@ -1,6 +1,6 @@
 package com.diva.models.auth
 
-import com.diva.models.api.auth.dtos.SignInDto
+import com.diva.models.api.auth.signin.dto.SignInDto
 
 data class SignInForm(
     val username: String = "",

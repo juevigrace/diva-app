@@ -2,8 +2,8 @@ package com.diva.auth.forgot.data
 
 import com.diva.database.session.SessionStorage
 import com.diva.models.Repository
-import com.diva.models.api.auth.dtos.PasswordUpdateDto
-import com.diva.models.api.user.dtos.EmailTokenDto
+import com.diva.models.api.auth.forgot.password.dtos.UpdatePasswordDto
+import com.diva.models.api.verification.dtos.EmailTokenDto
 import com.diva.models.api.user.dtos.UserEmailDto
 import com.diva.user.api.client.UserNetworkClient
 import io.github.juevigrace.diva.core.DivaResult
@@ -47,7 +47,7 @@ class ForgotRepositoryImpl(
 
     override fun forgotPasswordReset(newPassword: String): Flow<DivaResult<Unit, DivaError>> {
         return withSession(sessionStorage::getCurrentSession) { value ->
-            userClient.forgotPasswordReset(PasswordUpdateDto(newPassword), value.accessToken)
+            userClient.forgotPasswordReset(UpdatePasswordDto(newPassword), value.accessToken)
                 .onFailure { err -> emit(DivaResult.failure(err)) }
                 .onSuccess { emit(DivaResult.success(Unit)) }
         }

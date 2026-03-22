@@ -12,6 +12,9 @@ data class Permission(
     val id: Uuid,
     val name: String,
     val description: String,
+    val resource: String,
+    // TODO: change to enum
+    val action: String,
     val roleLevel: Role,
     val createdAt: Instant,
     val updatedAt: Instant,

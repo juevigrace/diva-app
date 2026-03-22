@@ -11,10 +11,10 @@ data class UserPermissionResponse(
     val grantedBy: String? = null,
     @SerialName("granted")
     val granted: Boolean,
-    @SerialName("grantedAt")
+    @SerialName("granted_at")
     val grantedAt: Long? = null,
-    @SerialName("expiresAt")
+    @SerialName("expires_at")
     val expiresAt: Long? = null,
-    @SerialName("updatedAt")
+    @SerialName("updated_at")
     val updatedAt: Long,
 )

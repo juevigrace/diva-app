@@ -3,10 +3,9 @@ package com.diva.user.data
 import com.diva.database.session.SessionStorage
 import com.diva.database.user.UserStorage
 import com.diva.models.Repository
-import com.diva.models.api.auth.dtos.PasswordUpdateDto
-import com.diva.models.api.user.dtos.EmailTokenDto
 import com.diva.models.api.user.dtos.UpdateUserDto
 import com.diva.models.api.user.dtos.UserEmailDto
+import com.diva.models.api.verification.dtos.EmailTokenDto
 import com.diva.models.auth.Session
 import com.diva.models.auth.SignUpForm
 import com.diva.models.preferences.PreferenceType
@@ -94,10 +93,10 @@ class UserRepositoryImpl(
                         .onSuccess { list ->
                             val pagination: Pagination<User> = Pagination(
                                 items = list,
-                                totalItems = res.totalItems,
-                                totalPages = res.totalPages,
-                                currentPage = res.currentPage,
-                                pageSize = res.pageSize
+                                totalItems = res.pagination.totalItems,
+                                totalPages = res.pagination.totalPages,
+                                currentPage = res.pagination.page,
+                                pageSize = res.pagination.limit
                             )
                             emit(DivaResult.success(pagination))
                         }
@@ -144,8 +143,8 @@ class UserRepositoryImpl(
             userClient.update(
                 id.toString(),
                 UpdateUserDto(
-                    username = user.username,
                     alias = user.alias,
+                    birthDate = user.birthDate.toEpochMilliseconds(),
                     bio = user.bio,
                     avatar = user.avatar
                 ),
@@ -169,8 +168,8 @@ class UserRepositoryImpl(
         return withSession(sessionStorage::getCurrentSession) { value ->
             userClient.updateMe(
                 UpdateUserDto(
-                    username = user.username,
                     alias = user.alias,
+                    birthDate = user.birthDate.toEpochMilliseconds(),
                     bio = user.bio,
                     avatar = user.avatar
                 ),
@@ -281,12 +280,12 @@ class UserRepositoryImpl(
 
     override fun syncPreferences(): Flow<DivaResult<Unit, DivaError>> {
         return withSession(sessionStorage::getCurrentSession) { value ->
-            userClient.updatePreferences(value.user.preferences.toDto(), value.accessToken)
+            userClient.updatePreferences(value.user.preferences.toPreferenceDto(), value.accessToken)
                 .onFailure { err ->
                     // TODO: check in api which error is returned, if not able to update because
                     // preferences are not found then create them
                     if (err.cause is ErrorCause.Validation.MissingValue) {
-                        userClient.createPreferences(value.user.preferences.toDto(), value.accessToken)
+                        userClient.createPreferences(value.user.preferences.toPreferenceDto(), value.accessToken)
                             .onFailure { err -> emit(DivaResult.failure(err)) }
                             .onSuccess { emit(DivaResult.success(Unit)) }
                     }

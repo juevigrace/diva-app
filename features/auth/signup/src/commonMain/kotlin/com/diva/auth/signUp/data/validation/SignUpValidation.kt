@@ -20,8 +20,6 @@ object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
             usernameError = validateUsername(form.username),
             passwordError = validatePassword(form.password),
             confirmPasswordError = validateConfirmPassword(form.password, form.confirmPassword),
-            birthDateError = validateBirthDate(form.birthDate),
-            phoneError = validatePhone(form.phone),
             termsError = validateTerms(form.termsAndConditions),
             privacyPolicyError = validatePrivacy(form.privacyPolicy),
         )
@@ -63,22 +61,6 @@ object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
         }
     }
 
-    private fun validateBirthDate(birthDate: Long): Option<StringResource> {
-        return if (birthDate == 0L) {
-            Option.Some(Res.string.field_required)
-        } else {
-            Option.None
-        }
-    }
-
-    private fun validatePhone(phone: String): Option<StringResource> {
-        return if (phone.isNotEmpty() && !phone.all { it.isDigit() }) {
-            Option.Some(Res.string.invalid_phone_number)
-        } else {
-            Option.None
-        }
-    }
-
     private fun validateTerms(accepted: Boolean): Option<StringResource> {
         return if (!accepted) {
             Option.Some(Res.string.terms_required)
@@ -105,10 +87,6 @@ data class SignUpValidation(
     val showPasswordError: Boolean = false,
     val confirmPasswordError: Option<StringResource> = Option.None,
     val showConfirmPasswordError: Boolean = false,
-    val birthDateError: Option<StringResource> = Option.None,
-    val showBirthDateError: Boolean = false,
-    val phoneError: Option<StringResource> = Option.None,
-    val showPhoneError: Boolean = false,
     val termsError: Option<StringResource> = Option.None,
     val showTermsError: Boolean = false,
     val privacyPolicyError: Option<StringResource> = Option.None,
@@ -118,8 +96,6 @@ data class SignUpValidation(
         showUsernameError &&
         showPasswordError &&
         showConfirmPasswordError &&
-        showBirthDateError &&
-        showPhoneError &&
         showTermsError &&
         showPrivacyPolicyError
 
@@ -129,8 +105,6 @@ data class SignUpValidation(
                 usernameError is Option.None &&
                 passwordError is Option.None &&
                 confirmPasswordError is Option.None &&
-                birthDateError is Option.None &&
-                phoneError is Option.None &&
                 termsError is Option.None &&
                 privacyPolicyError is Option.None
             )

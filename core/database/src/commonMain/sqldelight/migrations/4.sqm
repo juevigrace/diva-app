@@ -48,7 +48,6 @@ CREATE TABLE IF NOT EXISTS diva_message(
 CREATE TABLE IF NOT EXISTS diva_message_media(
     message_id TEXT NOT NULL,
     media_id TEXT NOT NULL,
-    position INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (message_id, media_id),
     FOREIGN KEY(message_id) REFERENCES diva_message(id) ON DELETE CASCADE,
     FOREIGN KEY(media_id) REFERENCES diva_media(id) ON DELETE CASCADE

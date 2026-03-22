@@ -11,9 +11,9 @@ data class UserResponse(
     val email: String,
     @SerialName("username")
     val username: String,
-    @SerialName("birthDate")
+    @SerialName("birth_date")
     val birthDate: Long,
-    @SerialName("phoneNumber")
+    @SerialName("phone_number")
     val phoneNumber: String,
     @SerialName("alias")
     val alias: String,
@@ -21,12 +21,14 @@ data class UserResponse(
     val avatar: String,
     @SerialName("bio")
     val bio: String,
-    @SerialName("userVerified")
+    @SerialName("user_verified")
     val userVerified: Boolean,
-    @SerialName("createdAt")
+    @SerialName("role")
+    val role: String,
+    @SerialName("created_at")
     val createdAt: Long,
-    @SerialName("updatedAt")
+    @SerialName("updated_at")
     val updatedAt: Long,
-    @SerialName("deletedAt")
+    @SerialName("deleted_at")
     val deletedAt: Long? = null
 )

@@ -1,10 +1,10 @@
 package com.diva.auth.signUp.presentation.viewmodel
 
-import com.diva.auth.signUp.presentation.events.SignUpEvents
-import com.diva.auth.signUp.presentation.state.SignUpState
 import com.diva.auth.signUp.data.SignUpRepository
 import com.diva.auth.signUp.data.validation.SignUpValidation
 import com.diva.auth.signUp.data.validation.SignUpValidator
+import com.diva.auth.signUp.presentation.events.SignUpEvents
+import com.diva.auth.signUp.presentation.state.SignUpState
 import com.diva.core.ui.resources.Res
 import com.diva.core.ui.resources.error_verification_action_not_triggered
 import com.diva.models.actions.Actions
@@ -26,16 +26,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
-import kotlin.time.Instant
 
 class SignUpViewModel(
     private val repository: SignUpRepository,
@@ -58,23 +52,14 @@ class SignUpViewModel(
             usernameError = if (validation.showUsernameError) valid.usernameError else Option.None,
             passwordError = if (validation.showPasswordError) valid.passwordError else Option.None,
             confirmPasswordError = if (validation.showConfirmPasswordError) valid.confirmPasswordError else Option.None,
-            birthDateError = if (validation.showBirthDateError) valid.birthDateError else Option.None,
-            phoneError = if (validation.showPhoneError) valid.phoneError else Option.None,
             termsError = if (validation.showTermsError) valid.termsError else Option.None,
             privacyPolicyError = if (validation.showPrivacyPolicyError) valid.privacyPolicyError else Option.None,
         )
-    }
-        .debounce(5000)
-        .map { state ->
-            state.copy(
-                phoneError = Option.None
-            )
-        }
-        .stateIn(
-            scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = formValidationState.value
-        )
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = formValidationState.value
+    )
 
     private val _state: MutableStateFlow<SignUpState> = MutableStateFlow(SignUpState())
     val state: StateFlow<SignUpState> = combine(
@@ -82,21 +67,10 @@ class SignUpViewModel(
         formState,
         combinedValidationState,
     ) { state, form, validation ->
-        val formattedBirthDate = if (form.birthDate > 0) {
-            val instant = Instant.fromEpochMilliseconds(form.birthDate)
-            val localDate = instant.toLocalDateTime(TimeZone.UTC)
-            "${localDate.day.toString().padStart(
-                2,
-                '0'
-            )}/${localDate.month.number.toString().padStart(2, '0')}/${localDate.year}"
-        } else {
-            ""
-        }
         state.copy(
             signUpForm = form,
             formValidation = validation,
             submitEnabled = validation.valid() && !state.submitLoading,
-            formattedBirthDate = formattedBirthDate,
         )
     }.stateIn(
         scope = scope,
@@ -107,18 +81,15 @@ class SignUpViewModel(
     fun onEvent(event: SignUpEvents) {
         when (event) {
             is SignUpEvents.OnAliasNameChanged -> aliasNameChanged(event.value)
-            is SignUpEvents.OnBirthDateChanged -> birthDateChanged(event.value)
             is SignUpEvents.OnConfirmPasswordChanged -> confirmPasswordChanged(event.value)
             is SignUpEvents.OnEmailChanged -> emailChanged(event.value)
             is SignUpEvents.OnPasswordChanged -> passwordChanged(event.value)
-            is SignUpEvents.OnPhoneChanged -> phoneChanged(event.value)
             is SignUpEvents.OnUsernameChanged -> usernameChanged(event.value)
             SignUpEvents.OnSubmit -> submit()
             SignUpEvents.TogglePrivacyPolicy -> togglePrivacyPolicy()
             SignUpEvents.ToggleTerms -> toggleTerms()
             SignUpEvents.TogglePasswordVisibility -> togglePasswordVisibility()
             SignUpEvents.ToggleConfirmPasswordVisibility -> toggleConfirmPasswordVisibility()
-            SignUpEvents.ToggleDatePicker -> toggleDatePicker()
             SignUpEvents.OnNavigateToSignIn -> navigateToSignIn()
         }
     }
@@ -152,20 +123,6 @@ class SignUpViewModel(
         formValidationState.update { state -> state.copy(showConfirmPasswordError = true) }
     }
 
-    private fun phoneChanged(value: String) {
-        formState.update { state ->
-            state.copy(
-                phone = if (value.all { c -> c.isDigit() } || value.isEmpty()) value else state.phone
-            )
-        }
-        formValidationState.update { state -> state.copy(showPhoneError = true) }
-    }
-
-    private fun birthDateChanged(value: Long) {
-        formState.update { state -> state.copy(birthDate = value) }
-        formValidationState.update { state -> state.copy(showBirthDateError = true) }
-    }
-
     private fun toggleTerms() {
         formState.update { state -> state.copy(termsAndConditions = !state.termsAndConditions) }
         formValidationState.update { state -> state.copy(showTermsError = true) }
@@ -182,10 +139,6 @@ class SignUpViewModel(
 
     private fun toggleConfirmPasswordVisibility() {
         _state.update { state -> state.copy(confirmPasswordVisible = !state.confirmPasswordVisible) }
-    }
-
-    private fun toggleDatePicker() {
-        _state.update { state -> state.copy(showDatePicker = !state.showDatePicker) }
     }
 
     private fun submit() {
@@ -227,7 +180,7 @@ class SignUpViewModel(
                             )
                         }
 
-                        if (actions[Actions.EMAIL_VERIFICATION] != null) {
+                        if (actions[Actions.USER_VERIFICATION] != null) {
                             navigator.navigate(VerificationDestination(VerificationAction.UserVerification))
                         } else {
                             toaster.show(

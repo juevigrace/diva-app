@@ -156,7 +156,7 @@ class SignInViewModel(
                             )
                         }
 
-                        if (actions[Actions.EMAIL_VERIFICATION] != null) {
+                        if (actions[Actions.USER_VERIFICATION] != null) {
                             navigator.navigate(VerificationDestination(VerificationAction.UserVerification))
                             return@collect
                         }

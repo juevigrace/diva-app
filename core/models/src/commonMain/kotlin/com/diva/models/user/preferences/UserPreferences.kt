@@ -21,18 +21,7 @@ data class UserPreferences(
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()
 ) {
-    fun toResponse(): UserPreferencesResponse {
-        return UserPreferencesResponse(
-            id = id.toString(),
-            theme = theme.name,
-            onboardingCompleted = onboardingCompleted,
-            language = language,
-            lastSyncAt = lastSyncAt.toEpochMilliseconds(),
-            createdAt = createdAt.toEpochMilliseconds(),
-            updatedAt = updatedAt.toEpochMilliseconds()
-        )
-    }
-    fun toDto(): UserPreferencesDto {
+    fun toPreferenceDto(): UserPreferencesDto {
         return UserPreferencesDto(
             id = id.toString(),
             theme = theme.name,
@@ -47,22 +36,12 @@ data class UserPreferences(
             return UserPreferences(
                 id = Uuid.parse(response.id),
                 type = PreferenceType.CLOUD,
-                theme = Theme.valueOf(response.theme),
+                theme = safeValueOfTheme(response.theme),
                 onboardingCompleted = response.onboardingCompleted,
                 language = response.language,
                 lastSyncAt = Instant.fromEpochMilliseconds(response.lastSyncAt),
                 createdAt = Instant.fromEpochMilliseconds(response.createdAt),
                 updatedAt = Instant.fromEpochMilliseconds(response.updatedAt)
-            )
-        }
-        fun fromDto(dto: UserPreferencesDto): UserPreferences {
-            return UserPreferences(
-                id = Uuid.parse(dto.id),
-                theme = safeValueOfTheme(dto.theme),
-                onboardingCompleted = dto.onboardingCompleted,
-                language = dto.language,
-                createdAt = Instant.fromEpochMilliseconds(dto.createdAt),
-                updatedAt = Instant.fromEpochMilliseconds(dto.updatedAt)
             )
         }
     }

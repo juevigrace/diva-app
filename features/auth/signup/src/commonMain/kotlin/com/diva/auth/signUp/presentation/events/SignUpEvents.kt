@@ -2,8 +2,6 @@ package com.diva.auth.signUp.presentation.events
 
 sealed interface SignUpEvents {
     data class OnAliasNameChanged(val value: String) : SignUpEvents
-    data class OnPhoneChanged(val value: String) : SignUpEvents
-    data class OnBirthDateChanged(val value: Long) : SignUpEvents
     data class OnEmailChanged(val value: String) : SignUpEvents
     data class OnUsernameChanged(val value: String) : SignUpEvents
     data class OnPasswordChanged(val value: String) : SignUpEvents
@@ -12,7 +10,6 @@ sealed interface SignUpEvents {
     data object ToggleTerms : SignUpEvents
     data object TogglePasswordVisibility : SignUpEvents
     data object ToggleConfirmPasswordVisibility : SignUpEvents
-    data object ToggleDatePicker : SignUpEvents
     data object OnSubmit : SignUpEvents
     data object OnNavigateToSignIn : SignUpEvents
 }

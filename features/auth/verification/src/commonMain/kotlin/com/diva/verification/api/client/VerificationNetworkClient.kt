@@ -1,7 +1,7 @@
 package com.diva.verification.api.client
 
 import com.diva.models.api.ApiResponse
-import com.diva.models.api.user.dtos.EmailTokenDto
+import com.diva.models.api.verification.dtos.EmailTokenDto
 import io.github.juevigrace.diva.core.DivaResult
 import io.github.juevigrace.diva.core.errors.DivaError
 import io.github.juevigrace.diva.core.errors.ErrorCause

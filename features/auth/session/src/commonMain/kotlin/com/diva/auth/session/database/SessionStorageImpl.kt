@@ -3,6 +3,7 @@ package com.diva.auth.session.database
 import com.diva.database.DivaDB
 import com.diva.database.session.SessionStorage
 import com.diva.models.auth.Session
+import com.diva.models.auth.SessionData
 import com.diva.models.session.SessionStatus
 import com.diva.models.user.User
 import io.github.juevigrace.diva.core.DivaResult
@@ -37,10 +38,12 @@ class SessionStorageImpl(
                     user = User(id = Uuid.NIL),
                     accessToken = accessToken,
                     refreshToken = refreshToken,
-                    device = device,
                     status = status,
-                    ipAddress = ipAddress,
-                    userAgent = userAgent,
+                    data = SessionData(
+                        device = device,
+                        ip = ipAddress,
+                        agent = userAgent,
+                    ),
                     expiresAt = Instant.fromEpochMilliseconds(expiresAt),
                     expired = expiresAt < Clock.System.now().toEpochMilliseconds(),
                     createdAt = Instant.fromEpochMilliseconds(createdAt),
@@ -76,10 +79,10 @@ class SessionStorageImpl(
                     user_id = item.user.id.toString(),
                     access_token = item.accessToken,
                     refresh_token = item.refreshToken,
-                    device = item.device,
                     status = item.status,
-                    ip_address = item.ipAddress,
-                    user_agent = item.userAgent,
+                    device = item.data.device,
+                    ip_address = item.data.ip,
+                    user_agent = item.data.agent,
                     expires_at = item.expiresAt.toEpochMilliseconds(),
                 )
             }
@@ -106,10 +109,10 @@ class SessionStorageImpl(
                     id = item.id.toString(),
                     access_token = item.accessToken,
                     refresh_token = item.refreshToken,
-                    device = item.device,
                     status = item.status,
-                    ip_address = item.ipAddress,
-                    user_agent = item.userAgent,
+                    device = item.data.device,
+                    ip_address = item.data.ip,
+                    user_agent = item.data.agent,
                     is_current = item.isCurrent,
                     expires_at = item.expiresAt.toEpochMilliseconds(),
                 )
@@ -206,10 +209,12 @@ class SessionStorageImpl(
             ),
             accessToken = accessToken,
             refreshToken = refreshToken,
-            device = device,
             status = status,
-            ipAddress = ipAddress,
-            userAgent = userAgent,
+            data = SessionData(
+                device = device,
+                ip = ipAddress,
+                agent = userAgent,
+            ),
             expiresAt = Instant.fromEpochMilliseconds(expiresAt),
             expired = expiresAt < Clock.System.now().toEpochMilliseconds(),
             createdAt = Instant.fromEpochMilliseconds(createdAt),

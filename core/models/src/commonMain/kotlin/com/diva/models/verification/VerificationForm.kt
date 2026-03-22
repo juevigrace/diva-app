@@ -1,6 +1,6 @@
 package com.diva.models.verification
 
-import com.diva.models.api.user.dtos.EmailTokenDto
+import com.diva.models.api.verification.dtos.EmailTokenDto
 
 data class VerificationForm(
     val token: String = "",

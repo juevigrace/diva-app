@@ -1,14 +1,11 @@
 package com.diva.models.user
 
 import com.diva.models.api.user.response.UserResponse
-import com.diva.models.collection.Collection
 import com.diva.models.roles.Role
-import com.diva.models.social.interaction.share.Share
-import com.diva.models.social.post.Post
+import com.diva.models.roles.safeRole
 import com.diva.models.user.permissions.UserPermission
 import com.diva.models.user.preferences.UserPreferences
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.getOrElse
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
@@ -34,26 +31,7 @@ data class User(
     val permissions: List<UserPermission> = emptyList(),
     val followers: List<User> = emptyList(),
     val following: List<User> = emptyList(),
-    val posts: List<Post> = emptyList(),
-    val shares: List<Share> = emptyList(),
-    val collections: List<Collection> = emptyList(),
 ) {
-    fun toResponse(): UserResponse {
-        return UserResponse(
-            id = id.toString(),
-            email = email,
-            username = username,
-            birthDate = birthDate.toEpochMilliseconds(),
-            phoneNumber = phoneNumber,
-            alias = alias,
-            avatar = avatar,
-            bio = bio,
-            userVerified = userVerified,
-            createdAt = createdAt.toEpochMilliseconds(),
-            updatedAt = updatedAt.toEpochMilliseconds(),
-            deletedAt = deletedAt.getOrElse { null }?.toEpochMilliseconds(),
-        )
-    }
     companion object {
         fun fromResponse(response: UserResponse): User {
             return User(
@@ -66,6 +44,7 @@ data class User(
                 avatar = response.avatar,
                 bio = response.bio,
                 userVerified = response.userVerified,
+                role = safeRole(response.role),
                 createdAt = Instant.fromEpochMilliseconds(response.createdAt),
                 updatedAt = Instant.fromEpochMilliseconds(response.updatedAt),
                 deletedAt = Option.of(response.deletedAt?.let { value -> Instant.fromEpochMilliseconds(value) }),

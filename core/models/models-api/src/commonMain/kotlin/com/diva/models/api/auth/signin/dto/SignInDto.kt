@@ -1,16 +1,15 @@
-package com.diva.models.api.user.dtos
+package com.diva.models.api.auth.signin.dto
 
+import com.diva.models.api.auth.session.dtos.SessionDataDto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CreateUserDto(
-    @SerialName("email")
-    val email: String,
+data class SignInDto(
     @SerialName("username")
     val username: String,
     @SerialName("password")
     val password: String,
-    @SerialName("alias")
-    val alias: String = username,
+    @SerialName("session_data")
+    val sessionData: SessionDataDto
 )

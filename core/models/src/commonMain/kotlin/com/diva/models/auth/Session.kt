@@ -1,6 +1,6 @@
 package com.diva.models.auth
 
-import com.diva.models.api.auth.response.SessionResponse
+import com.diva.models.api.auth.session.response.SessionResponse
 import com.diva.models.session.SessionStatus
 import com.diva.models.session.safeSessionStatus
 import com.diva.models.user.User
@@ -15,11 +15,9 @@ data class Session(
     val user: User,
     val accessToken: String,
     val refreshToken: String,
-    val device: String,
     val status: SessionStatus,
     val isCurrent: Boolean = false,
-    val ipAddress: String,
-    val userAgent: String,
+    val data: SessionData,
     val expiresAt: Instant,
     val expired: Boolean = expiresAt < Clock.System.now(),
     val createdAt: Instant,
@@ -32,9 +30,9 @@ data class Session(
             accessToken = accessToken,
             refreshToken = refreshToken,
             status = status.name,
-            device = device,
-            ip = ipAddress,
-            agent = userAgent,
+            device = data.device,
+            ip = data.ip,
+            agent = data.agent,
             expiresAt = expiresAt.toEpochMilliseconds(),
             createdAt = createdAt.toEpochMilliseconds(),
             updatedAt = updatedAt.toEpochMilliseconds(),
@@ -48,10 +46,12 @@ data class Session(
                 user = User(id = Uuid.parse(response.userId)),
                 accessToken = response.accessToken,
                 refreshToken = response.refreshToken,
-                device = response.device,
                 status = safeSessionStatus(response.status),
-                ipAddress = response.ip,
-                userAgent = response.agent,
+                data = SessionData(
+                    device = response.device,
+                    agent = response.agent,
+                    ip = response.ip
+                ),
                 expiresAt = Instant.fromEpochMilliseconds(response.expiresAt),
                 createdAt = Instant.fromEpochMilliseconds(response.createdAt),
                 updatedAt = Instant.fromEpochMilliseconds(response.updatedAt),
