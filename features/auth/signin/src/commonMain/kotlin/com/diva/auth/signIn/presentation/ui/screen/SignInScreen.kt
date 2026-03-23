@@ -59,6 +59,7 @@ import com.diva.core.ui.resources.sign_in
 import com.diva.core.ui.resources.sign_up
 import com.diva.core.ui.resources.success
 import com.diva.core.ui.resources.twitter
+import com.diva.models.config.AppConfig
 import com.diva.ui.components.input.SecureTextField
 import com.diva.ui.models.SocialProvider
 import com.diva.ui.navigation.arguments.ForgotAction
@@ -66,6 +67,7 @@ import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.isPresent
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
