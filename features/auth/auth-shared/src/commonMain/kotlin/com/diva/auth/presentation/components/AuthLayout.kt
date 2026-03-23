@@ -2,10 +2,14 @@ package com.diva.auth.presentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
@@ -16,31 +20,40 @@ import com.diva.core.ui.resources.Res
 import com.diva.core.ui.resources.logo
 import com.diva.core.ui.resources.puerro
 import io.github.juevigrace.diva.ui.components.layout.Screen
-import kotlinx.serialization.json.JsonNull.content
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun AuthLayout(
-    content: @Composable () -> Unit
+    content: LazyListScope.() -> Unit
 ) {
     Screen { innerPadding ->
-        LazyColumn(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceAround,
-            contentPadding = PaddingValues(vertical = 16.dp, horizontal = 24.dp)
+            contentAlignment = Alignment.Center
         ) {
-            item {
-                Image(
-                    modifier = Modifier.size(200.dp),
-                    painter = painterResource(Res.drawable.puerro),
-                    contentDescription = stringResource(Res.string.logo)
-                )
-            }
-            item {
+            LazyColumn(
+                modifier = Modifier
+                    .then(
+                        if (maxWidth > 500.dp) {
+                            Modifier.widthIn(max = 500.dp).fillMaxHeight()
+                        } else {
+                            Modifier.fillMaxWidth().fillMaxHeight()
+                        }
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp)
+            ) {
+                item {
+                    Image(
+                        modifier = Modifier.size(200.dp),
+                        painter = painterResource(Res.drawable.puerro),
+                        contentDescription = stringResource(Res.string.logo)
+                    )
+                }
                 content()
             }
         }

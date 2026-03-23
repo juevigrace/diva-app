@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
@@ -79,11 +78,7 @@ fun SignInScreen(
     val appConfig: AppConfig = koinInject()
 
     AuthLayout {
-        Column(
-            modifier = Modifier.widthIn(min = 250.dp, max = 400.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        item {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
@@ -227,7 +222,9 @@ fun SignInScreen(
                     }
                 }
             }
+        }
 
+        item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
@@ -240,69 +237,79 @@ fun SignInScreen(
                 )
                 HorizontalDivider(modifier = Modifier.weight(1f))
             }
+        }
 
-            state.socialProviders.forEach { provider ->
-                OutlinedButton(
-                    onClick = { viewModel.onEvent(SignInEvents.OnSocialLogin(provider)) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(
-                                when (provider) {
-                                    SocialProvider.Google -> Res.drawable.ic_google
-                                    SocialProvider.Facebook -> Res.drawable.ic_facebook
-                                    SocialProvider.Twitter -> Res.drawable.ic_x
-                                }
-                            ),
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Text(
-                            text = when (provider) {
-                                SocialProvider.Google -> stringResource(Res.string.google)
-                                SocialProvider.Facebook -> stringResource(Res.string.facebook)
-                                SocialProvider.Twitter -> stringResource(Res.string.twitter)
-                            }
-                        )
-                    }
-                }
-            }
-
-            Row(
+        item {
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = stringResource(Res.string.dont_have_account),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                TextButton(
-                    onClick = {
-                        viewModel.onEvent(SignInEvents.OnSignUp)
-                    }
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                state.socialProviders.forEach { provider ->
+                    OutlinedButton(
+                        onClick = { viewModel.onEvent(SignInEvents.OnSocialLogin(provider)) },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = stringResource(Res.string.sign_up),
-                        )
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(Res.drawable.ic_chevron_right),
-                            contentDescription = null,
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    when (provider) {
+                                        SocialProvider.Google -> Res.drawable.ic_google
+                                        SocialProvider.Facebook -> Res.drawable.ic_facebook
+                                        SocialProvider.Twitter -> Res.drawable.ic_x
+                                    }
+                                ),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Text(
+                                text = when (provider) {
+                                    SocialProvider.Google -> stringResource(Res.string.google)
+                                    SocialProvider.Facebook -> stringResource(Res.string.facebook)
+                                    SocialProvider.Twitter -> stringResource(Res.string.twitter)
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.dont_have_account),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    TextButton(
+                        onClick = {
+                            viewModel.onEvent(SignInEvents.OnSignUp)
+                        }
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.sign_up),
+                            )
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(Res.drawable.ic_chevron_right),
+                                contentDescription = null,
+                            )
+                        }
                     }
                 }
             }
+        }
 
+        item {
             Text(
                 text = "Ver. ${appConfig.versionName}",
                 style = MaterialTheme.typography.labelSmall,

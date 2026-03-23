@@ -17,5 +17,8 @@ fun SignUpScreen(
     val state: SignUpState by viewModel.state.collectAsStateWithLifecycle()
 
     AuthLayout {
+        item {
+
+        }
     }
 }
