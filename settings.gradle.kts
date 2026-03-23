@@ -53,7 +53,7 @@ include(
 )
 
 include(
-    ":features:auth",
+    ":features:auth:auth-core",
     ":features:auth:auth-shared",
     ":features:auth:forgot",
     ":features:auth:session",

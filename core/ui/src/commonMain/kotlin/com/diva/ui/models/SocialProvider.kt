@@ -6,6 +6,6 @@ sealed interface SocialProvider {
     data object Twitter : SocialProvider
 
     companion object {
-        val defaultProviders = listOf(Google, Facebook, Twitter)
+        val defaultProviders = listOf(Google)
     }
 }

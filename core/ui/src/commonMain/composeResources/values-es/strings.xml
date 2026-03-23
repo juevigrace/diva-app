@@ -27,6 +27,8 @@
     <string name="twitter">Twitter</string>
     <string name="dont_have_account">¿No tienes una cuenta?</string>
     <string name="already_have_account">¿Ya tienes una cuenta?</string>
+    <string name="show_text">Mostrar texto</string>
+    <string name="hide_text">Ocultar texto</string>
     <string name="show_password">Mostrar contraseña</string>
     <string name="hide_password">Ocultar contraseña</string>
     <string name="first_name">Nombre</string>
@@ -42,6 +44,8 @@
     <string name="password_mismatch">Las contraseñas no coinciden</string>
     <string name="ok">Aceptar</string>
     <string name="cancel">Cancelar</string>
+    <string name="submit">Enviar</string>
+    <string name="success">Éxito</string>
     <!--PLACEHOLDERS-->
     <string name="email_placeholder">ejemplo@correo.com</string>
     <string name="username_placeholder">juan123</string>

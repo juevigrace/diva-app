@@ -17,6 +17,16 @@ data class AppConfig(
         "https"
     },
     override val version: String = "1.0",
+    val versionName: String = "$version${if (environment != Environment.PRODUCTION) {
+        "-$environment"
+    } else {
+        ""
+    }
+    }${if (debug) {
+        "-debug"
+    } else {
+        ""
+    }}",
     override val deviceName: String = "Unknown",
     override val agent: String = "Diva/$version (Unknown)",
     override val baseUrl: String = "$protocol://$domain${port.map { ":$it" }.getOrElse { "" }}",
