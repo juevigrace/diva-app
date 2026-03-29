@@ -8,6 +8,7 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.sse.SSE
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -29,6 +30,7 @@ fun networkModule(config: AppConfig): Module {
                 defaultRequest {
                     url(config.baseUrl)
                 }
+                install(SSE)
             }
         )
         single<DivaClient> {

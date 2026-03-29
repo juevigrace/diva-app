@@ -9,6 +9,7 @@ import io.github.juevigrace.diva.database.driver.DriverProvider
 import io.github.juevigrace.diva.database.driver.Schema
 import migrations.Diva_session
 import migrations.Diva_user
+import migrations.Diva_user_pending_actions
 import migrations.Diva_user_preferences
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -36,8 +37,10 @@ fun databaseModule(): Module {
                         roleAdapter = EnumColumnAdapter(),
                     ),
                     diva_user_preferencesAdapter = Diva_user_preferences.Adapter(
-                        typeAdapter = EnumColumnAdapter(),
                         themeAdapter = EnumColumnAdapter(),
+                    ),
+                    diva_user_pending_actionsAdapter = Diva_user_pending_actions.Adapter(
+                        action_nameAdapter = EnumColumnAdapter(),
                     ),
                 ),
             )

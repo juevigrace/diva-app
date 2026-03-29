@@ -14,6 +14,7 @@ import com.diva.ui.navigation.Destination
 import com.diva.ui.theme.AppTypography
 import com.diva.ui.theme.darkScheme
 import com.diva.ui.theme.lightScheme
+import com.diva.verification.presentation.ui.components.navigation.verificationEntries
 import io.github.juevigrace.diva.ui.components.navigation.Navigator
 import io.github.juevigrace.diva.ui.components.toaster.LocalToaster
 import io.github.juevigrace.diva.ui.components.wrappers.DivaApp
@@ -32,10 +33,6 @@ fun App() {
 
     val toaster: Toaster = koinInject()
     val navigator: Navigator<Destination> = koinInject()
-
-    LaunchedEffect(Unit) {
-        viewModel.initialize()
-    }
 
     LaunchedEffect(state.shouldNavigate) {
         delay(1000)
@@ -60,6 +57,7 @@ fun App() {
                 onboardingEntries()
                 authEntries()
                 homeEntries()
+                verificationEntries()
             }
         )
     }

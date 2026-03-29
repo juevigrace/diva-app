@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 // TODO: create form class
+// TODO: request or check in db for password action
 class ForgotViewModel(
     private val action: ForgotAction,
     private val navigator: Navigator<Destination>,

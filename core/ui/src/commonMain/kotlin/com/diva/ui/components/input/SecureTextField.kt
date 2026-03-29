@@ -6,16 +6,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -26,7 +21,6 @@ import com.diva.core.ui.resources.ic_eye
 import com.diva.core.ui.resources.ic_eye_off
 import com.diva.core.ui.resources.show_text
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -45,48 +39,15 @@ fun SecureTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     interactionSource: MutableInteractionSource? = null,
 ) {
-    var hasBeenChanged by remember { mutableStateOf(false) }
     var showText by remember { mutableStateOf(false) }
-    var localValue by remember { mutableStateOf(value) }
 
-    LaunchedEffect(value) {
-        if (value != localValue) {
-            localValue = value
-        }
-    }
-
-    LaunchedEffect(localValue) {
-        if (hasBeenChanged) {
-            snapshotFlow { localValue }
-                .debounce(300L)
-                .collect {
-                    onValueChange(it)
-                }
-        }
-    }
-
-    OutlinedTextField(
-        value = localValue,
-        onValueChange = { newValue ->
-            localValue = newValue
-            hasBeenChanged = true
-        },
+    LocalTextField(
+        value = value,
+        onValueChange = onValueChange,
         modifier = modifier,
-        label = label?.let {
-            {
-                Text(text = it)
-            }
-        },
-        placeholder = placeholder?.let {
-            {
-                Text(text = it, style = MaterialTheme.typography.bodyMedium)
-            }
-        },
-        supportingText = supportingText?.let {
-            {
-                Text(text = it, style = MaterialTheme.typography.labelMedium)
-            }
-        },
+        label = label,
+        placeholder = placeholder,
+        supportingText = supportingText,
         leadingIcon = leadingIcon,
         trailingIcon = {
             IconButton(onClick = { showText = !showText }) {

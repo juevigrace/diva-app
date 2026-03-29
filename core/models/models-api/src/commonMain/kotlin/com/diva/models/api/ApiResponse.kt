@@ -15,6 +15,6 @@ data class ApiResponse<T>(
     val data: T? = null,
     @SerialName("message")
     val message: String,
-    @SerialName("timestamp")
-    val timestamp: Long = Clock.System.now().toEpochMilliseconds(),
+    @SerialName("time")
+    val time: Long = Clock.System.now().toEpochMilliseconds(),
 )

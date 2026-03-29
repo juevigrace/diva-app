@@ -1,11 +1,10 @@
 package com.diva.auth.signIn.presentation.viewmodel
 
-import com.diva.auth.signIn.presentation.events.SignInEvents
-import com.diva.auth.signIn.presentation.state.SignInState
 import com.diva.auth.signIn.data.SignInRepository
 import com.diva.auth.signIn.data.validation.SignInValidation
 import com.diva.auth.signIn.data.validation.SignInValidator
-import com.diva.models.actions.Actions
+import com.diva.auth.signIn.presentation.events.SignInEvents
+import com.diva.auth.signIn.presentation.state.SignInState
 import com.diva.models.auth.SessionData
 import com.diva.models.auth.SignInForm
 import com.diva.models.config.AppConfig
@@ -15,9 +14,7 @@ import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.ForgotDestination
 import com.diva.ui.navigation.HomeDestination
 import com.diva.ui.navigation.SignUpDestination
-import com.diva.ui.navigation.VerificationDestination
 import com.diva.ui.navigation.arguments.ForgotAction
-import com.diva.ui.navigation.arguments.VerificationAction
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.ui.navigation.Navigator
@@ -78,8 +75,8 @@ class SignInViewModel(
             is SignInEvents.OnPasswordChanged -> passwordChanged(event.password)
             is SignInEvents.OnUsernameChanged -> usernameChanged(event.email)
             is SignInEvents.OnSocialLogin -> handleSocialLogin(event.provider)
-            is SignInEvents.OnForgot -> navigateToForgot(event.action)
-            SignInEvents.OnSignUp -> navigateToSignUp()
+            is SignInEvents.OnNavigateToForgot -> navigateToForgot(event.action)
+            SignInEvents.OnNavigateToSignUp -> navigateToSignUp()
             SignInEvents.OnSubmit -> submit()
             SignInEvents.TogglePassword -> togglePassword()
         }
@@ -154,11 +151,6 @@ class SignInViewModel(
                                 submitLoading = false,
                                 submitSuccess = true
                             )
-                        }
-
-                        if (actions[Actions.USER_VERIFICATION] != null) {
-                            navigator.navigate(VerificationDestination(VerificationAction.UserVerification))
-                            return@collect
                         }
 
                         navigator.replaceAll(HomeDestination)

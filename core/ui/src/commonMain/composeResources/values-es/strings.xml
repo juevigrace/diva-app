@@ -39,8 +39,10 @@
     <string name="phone">Teléfono</string>
     <string name="birth_date">Fecha de Nacimiento</string>
     <string name="confirm_password">Confirmar Contraseña</string>
-    <string name="terms_and_conditions">Acepto los Términos y Condiciones</string>
-    <string name="privacy_policy">Acepto la Política de Privacidad</string>
+    <string name="by_continuing_for_temrs">Al continuar, aceptas nuestros</string>
+    <string name="by_continuing_for_privacy">Al continuar, aceptas nuestra</string>
+    <string name="terms_and_conditions">Términos y Condiciones</string>
+    <string name="privacy_policy">Política de Privacidad</string>
     <string name="password_mismatch">Las contraseñas no coinciden</string>
     <string name="ok">Aceptar</string>
     <string name="cancel">Cancelar</string>
@@ -58,6 +60,8 @@
     <string name="invalid_phone_number">El teléfono debe contener solo números</string>
     <string name="username_too_short">El usuario debe tener al menos 3 caracteres</string>
     <string name="invalid_email">Por favor ingresa un correo válido</string>
+    <string name="email_taken">El correo ya está en uso</string>
+    <string name="username_taken">El usuario ya está en uso</string>
     <string name="password_too_short">La contraseña debe tener al menos 4 caracteres</string>
     <string name="terms_required">Debes aceptar los Términos y Condiciones</string>
     <string name="privacy_required">Debes aceptar la Política de Privacidad</string>
@@ -75,6 +79,7 @@
     <string name="error_validation_unexpected_value">Valor inesperado proporcionado</string>
     <string name="error_validation_used">Este valor ya está en uso</string>
     <string name="error_verification_action_not_triggered">No se pudo activar la acción de verificación. Por favor contacta a soporte.</string>
+    <string name="error_action_not_specified">Acción no especificada</string>
     <!--SPECIFIC APP TEXT-->
     <string name="onboarding_social_title">Conectar con Redes Sociales</string>
     <string name="onboarding_social_description">Comparte momentos, sigue a amigos y descubre contenido tendencia de todo el mundo.</string>

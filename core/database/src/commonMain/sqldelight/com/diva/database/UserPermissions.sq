@@ -7,6 +7,13 @@ UPDATE diva_user_permissions
 SET granted = ?, expires_at = ?, updated_at = NOW()
 WHERE permission_id = ? AND user_id = ?;
 
-delete:
+deleteById:
 DELETE FROM diva_user_permissions
 WHERE permission_id = ? AND user_id = ?;
+
+deleteByUser:
+DELETE FROM diva_user_permissions
+WHERE user_id = ?;
+
+deleteAll:
+DELETE FROM diva_user_permissions;

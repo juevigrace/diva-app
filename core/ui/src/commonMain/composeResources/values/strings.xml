@@ -41,8 +41,10 @@
     <string name="phone">Phone</string>
     <string name="birth_date">Birth Date</string>
     <string name="confirm_password">Confirm Password</string>
-    <string name="terms_and_conditions">I accept the Terms and Conditions</string>
-    <string name="privacy_policy">I accept the Privacy Policy</string>
+    <string name="by_continuing_for_temrs">By continuing, you agree to our</string>
+    <string name="by_continuing_for_privacy">By continuing, you agree to our</string>
+    <string name="terms_and_conditions">Terms and Conditions</string>
+    <string name="privacy_policy">Privacy Policy</string>
     <string name="password_mismatch">Passwords do not match</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -60,6 +62,8 @@
     <string name="invalid_phone_number">Phone number must contain only numbers</string>
     <string name="username_too_short">Username must be at least 3 characters</string>
     <string name="invalid_email">Please enter a valid email address</string>
+    <string name="email_taken">Email is already taken</string>
+    <string name="username_taken">Username is already taken</string>
     <string name="password_too_short">Password must be at least 4 characters</string>
     <string name="terms_required">You must accept the Terms and Conditions</string>
     <string name="privacy_required">You must accept the Privacy Policy</string>
@@ -77,6 +81,7 @@
     <string name="error_validation_unexpected_value">Unexpected value provided</string>
     <string name="error_validation_used">This value is already in use</string>
     <string name="error_verification_action_not_triggered">Verification action could not be triggered. Please contact support.</string>
+    <string name="error_action_not_specified">Action not specified</string>
     <!--SPECIFIC APP TEXT-->
     <string name="onboarding_social_title">Connect with Social &amp; Media</string>
     <string name="onboarding_social_description">Share moments, follow friends, and discover trending content from around the world.</string>

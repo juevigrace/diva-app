@@ -10,10 +10,12 @@ UPDATE diva_user
 SET email = ?, username = ?, alias = ?, avatar = ?, bio = ?, updated_at = (strftime('%s', 'now'))
 WHERE id = ? AND deleted_at IS NULL;
 
-delete:
-UPDATE diva_user 
-SET deleted_at = (strftime('%s', 'now')) 
-WHERE id = ? AND deleted_at IS NULL;
+deleteById:
+DELETE FROM diva_user
+WHERE id = ?;
+
+deleteAll:
+DELETE FROM diva_user;
 
 findAll:
 SELECT

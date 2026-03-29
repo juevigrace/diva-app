@@ -1,9 +1,5 @@
-import com.diva.models.ModerationStatus;
 import com.diva.models.Theme;
-import com.diva.models.VisibilityType;
-import com.diva.models.collection.CollectionType;
-import com.diva.models.media.MediaType;
-import com.diva.models.preferences.PreferenceType;
+import com.diva.models.actions.Actions;
 import com.diva.models.roles.Role;
 import com.diva.models.session.SessionStatus;
 import kotlin.Boolean;
@@ -17,20 +13,28 @@ CREATE TABLE IF NOT EXISTS diva_user(
     alias TEXT NOT NULL,
     avatar TEXT NOT NULL DEFAULT '',
     bio TEXT NOT NULL DEFAULT '',
+    user_verified INTEGER AS Boolean NOT NULL DEFAULT 0,
     role TEXT AS Role NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     deleted_at INTEGER DEFAULT NULL
 );
 
+CREATE TABLE IF NOT EXISTS diva_user_pending_actions(
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    action_name TEXT AS Actions NOT NULL,
+    UNIQUE(user_id, action_name),
+    FOREIGN KEY(user_id) REFERENCES diva_user(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS diva_user_preferences(
     id TEXT NOT NULL PRIMARY KEY,
-    user_id TEXT DEFAULT NULL,
-    type TEXT AS PreferenceType NOT NULL DEFAULT 'LOCAL',
+    user_id TEXT DEFAULT NULL UNIQUE,
     theme TEXT AS Theme NOT NULL DEFAULT 'SYSTEM',
     onboarding_completed INTEGER AS Boolean NOT NULL DEFAULT 0,
     language TEXT NOT NULL DEFAULT 'en',
-    last_sync_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    last_sync_at INTEGER DEFAULT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     FOREIGN KEY(user_id) REFERENCES diva_user(id) ON DELETE CASCADE
@@ -74,5 +78,5 @@ CREATE TABLE IF NOT EXISTS diva_user_permissions(
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     PRIMARY KEY (permission_id, user_id),
     FOREIGN KEY (granted_by) REFERENCES diva_user(id),
-    FOREIGN KEY (user_id) REFERENCES diva_user(id)
+    FOREIGN KEY (user_id) REFERENCES diva_user(id) ON DELETE CASCADE
 );

@@ -1,22 +1,22 @@
-count:
-SELECT COUNT(s.id) FROM diva_session s;
-
 insert:
 INSERT INTO diva_session (id, user_id, access_token, refresh_token, device, status, ip_address, user_agent, expires_at)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE diva_session 
-SET access_token = ?, refresh_token = ?, device = ?, status = ?, ip_address = ?, is_current = ?, user_agent = ?, expires_at = ?, updated_at = (strftime('%s', 'now'))
+SET access_token = ?, refresh_token = ?, status = ?, expires_at = ?, updated_at = (strftime('%s', 'now'))
 WHERE id = ?;
 
-deleteByUserId:
-DELETE FROM diva_session
-WHERE user_id = ?;
+updateActive:
+UPDATE diva_session
+SET is_current = CASE WHEN id = ? THEN 1 ELSE 0 END;
 
-delete:
+deleteById:
 DELETE FROM diva_session
 WHERE id = ?;
+
+deleteAll:
+DELETE FROM diva_session;
 
 findAll:
 SELECT

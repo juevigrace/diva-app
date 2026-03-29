@@ -9,6 +9,7 @@ import com.diva.auth.di.authModule
 import com.diva.models.config.AppConfig
 import com.diva.onboarding.di.onboardingModule
 import com.diva.user.di.userModule
+import com.diva.verification.di.verificationModule
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -29,6 +30,7 @@ fun appModule(config: AppConfig): Module {
         includes(
             authModule(),
             userModule(),
+            verificationModule(),
         )
 
         viewModelOf(::AppViewModel)

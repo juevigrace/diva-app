@@ -10,7 +10,6 @@ kotlin {
             implementation(projects.features.auth.session)
             implementation(projects.features.auth.signin)
             implementation(projects.features.auth.signup)
-            implementation(projects.features.auth.verification)
         }
     }
 }

@@ -1,11 +1,11 @@
 package com.diva.auth.data.api.client
 
 import com.diva.models.api.ApiResponse
+import com.diva.models.api.auth.forgot.password.dtos.UpdatePasswordDto
 import com.diva.models.api.auth.session.dtos.SessionDataDto
+import com.diva.models.api.auth.session.response.SessionResponse
 import com.diva.models.api.auth.signin.dto.SignInDto
 import com.diva.models.api.auth.signup.dto.SignUpDto
-import com.diva.models.api.auth.response.AuthResponse
-import com.diva.models.api.auth.session.response.SessionResponse
 import io.github.juevigrace.diva.core.DivaResult
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.errors.DivaError
@@ -15,23 +15,25 @@ import io.github.juevigrace.diva.core.flatMap
 import io.github.juevigrace.diva.core.network.HttpRequestMethod
 import io.github.juevigrace.diva.core.tryResult
 import io.github.juevigrace.diva.network.client.DivaClient
+import io.github.juevigrace.diva.network.client.patch
 import io.github.juevigrace.diva.network.client.post
 import io.github.juevigrace.diva.network.client.toHttpStatusCodes
 import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
 
 interface AuthNetworkClient {
-    suspend fun signIn(dto: SignInDto): DivaResult<AuthResponse, DivaError>
-    suspend fun signUp(dto: SignUpDto): DivaResult<AuthResponse, DivaError>
+    suspend fun signIn(dto: SignInDto): DivaResult<SessionResponse, DivaError>
+    suspend fun signUp(dto: SignUpDto): DivaResult<SessionResponse, DivaError>
     suspend fun signOut(token: String): DivaResult<Unit, DivaError>
     suspend fun ping(token: String): DivaResult<Unit, DivaError>
     suspend fun refresh(dto: SessionDataDto, token: String): DivaResult<SessionResponse, DivaError>
+    suspend fun forgotPasswordReset(dto: UpdatePasswordDto, token: String): DivaResult<Unit, DivaError>
 }
 
 class AuthNetworkClientImpl(
     private val client: DivaClient
 ) : AuthNetworkClient {
-    override suspend fun signIn(dto: SignInDto): DivaResult<AuthResponse, DivaError> {
+    override suspend fun signIn(dto: SignInDto): DivaResult<SessionResponse, DivaError> {
         return tryResult(
             onError = { e -> e.toDivaError() }
         ) {
@@ -41,7 +43,7 @@ class AuthNetworkClientImpl(
             ).flatMap { response ->
                 when (response.status) {
                     HttpStatusCode.OK -> {
-                        val body: ApiResponse<AuthResponse> = response.body()
+                        val body: ApiResponse<SessionResponse> = response.body()
                         body.data?.let { data -> DivaResult.success(data) }
                             ?: DivaResult.failure(
                                 DivaError(
@@ -70,7 +72,7 @@ class AuthNetworkClientImpl(
         }
     }
 
-    override suspend fun signUp(dto: SignUpDto): DivaResult<AuthResponse, DivaError> {
+    override suspend fun signUp(dto: SignUpDto): DivaResult<SessionResponse, DivaError> {
         return tryResult(
             onError = { e -> e.toDivaError() }
         ) {
@@ -80,7 +82,7 @@ class AuthNetworkClientImpl(
             ).flatMap { response ->
                 when (response.status) {
                     HttpStatusCode.Created -> {
-                        val body: ApiResponse<AuthResponse> = response.body()
+                        val body: ApiResponse<SessionResponse> = response.body()
                         body.data?.let { data -> DivaResult.success(data) }
                             ?: DivaResult.failure(
                                 DivaError(
@@ -197,6 +199,38 @@ class AuthNetworkClientImpl(
                                 cause = ErrorCause.Network.Error(
                                     method = HttpRequestMethod.PATCH,
                                     url = "/api/auth/forgot/password",
+                                    status = response.status.toHttpStatusCodes(),
+                                    details = Option.Some(body.message)
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    override suspend fun forgotPasswordReset(
+        dto: UpdatePasswordDto,
+        token: String
+    ): DivaResult<Unit, DivaError> {
+        return tryResult(
+            onError = { e -> e.toDivaError() }
+        ) {
+            client.patch(
+                path = "/api/user/forgot/password",
+                body = dto,
+                headers = mapOf("Authorization" to "Bearer $token"),
+            ).flatMap { response ->
+                when (response.status) {
+                    HttpStatusCode.OK -> DivaResult.success(Unit)
+                    else -> {
+                        val body: ApiResponse<Nothing> = response.body()
+                        DivaResult.failure(
+                            DivaError(
+                                cause = ErrorCause.Network.Error(
+                                    method = HttpRequestMethod.PATCH,
+                                    url = "/api/user/forgot/password",
                                     status = response.status.toHttpStatusCodes(),
                                     details = Option.Some(body.message)
                                 )

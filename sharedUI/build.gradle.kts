@@ -5,7 +5,6 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(projects.core.models)
             implementation(projects.core.database)
             implementation(projects.core.ui)
 
@@ -16,12 +15,9 @@ kotlin {
 
             implementation(projects.features.user)
 
-            implementation(libs.diva.network.client)
-            api(libs.koin.core)
-        }
+            implementation(projects.features.verification)
 
-        androidMain.dependencies {
-            api(libs.koin.android)
+            implementation(libs.diva.network.client)
         }
 
         jvmMain.dependencies {

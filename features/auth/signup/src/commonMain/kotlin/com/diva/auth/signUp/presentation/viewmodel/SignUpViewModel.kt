@@ -5,22 +5,20 @@ import com.diva.auth.signUp.data.validation.SignUpValidation
 import com.diva.auth.signUp.data.validation.SignUpValidator
 import com.diva.auth.signUp.presentation.events.SignUpEvents
 import com.diva.auth.signUp.presentation.state.SignUpState
-import com.diva.core.ui.resources.Res
-import com.diva.core.ui.resources.error_verification_action_not_triggered
-import com.diva.models.actions.Actions
 import com.diva.models.auth.SessionData
 import com.diva.models.auth.SignUpForm
 import com.diva.models.config.AppConfig
 import com.diva.ui.messages.toToast
 import com.diva.ui.navigation.Destination
-import com.diva.ui.navigation.VerificationDestination
-import com.diva.ui.navigation.arguments.VerificationAction
+import com.diva.ui.navigation.HomeDestination
+import com.diva.user.data.UserRepository
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.fold
+import io.github.juevigrace.diva.core.onSuccess
 import io.github.juevigrace.diva.ui.navigation.Navigator
-import io.github.juevigrace.diva.ui.toast.ToastMessage
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,10 +27,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
 
 class SignUpViewModel(
     private val repository: SignUpRepository,
+    private val uRepository: UserRepository,
     private val navigator: Navigator<Destination>,
     private val toaster: Toaster,
     private val config: AppConfig,
@@ -90,7 +88,9 @@ class SignUpViewModel(
             SignUpEvents.ToggleTerms -> toggleTerms()
             SignUpEvents.TogglePasswordVisibility -> togglePasswordVisibility()
             SignUpEvents.ToggleConfirmPasswordVisibility -> toggleConfirmPasswordVisibility()
-            SignUpEvents.OnNavigateToSignIn -> navigateToSignIn()
+            SignUpEvents.OnNavigateToSignIn -> navigator.pop()
+            SignUpEvents.OnCheckEmailTaken -> checkEmailTaken()
+            SignUpEvents.OnCheckUsernameTaken -> checkUsernameTaken()
         }
     }
 
@@ -99,7 +99,7 @@ class SignUpViewModel(
     }
 
     private fun emailChanged(value: String) {
-        formState.update { state -> state.copy(email = value) }
+        formState.update { state -> state.copy(email = value, isEmailTaken = false) }
         formValidationState.update { state -> state.copy(showEmailError = true) }
     }
 
@@ -107,6 +107,7 @@ class SignUpViewModel(
         formState.update { state ->
             state.copy(
                 username = value,
+                isUsernameTaken = false,
                 alias = state.alias.ifEmpty { value }
             )
         }
@@ -172,30 +173,39 @@ class SignUpViewModel(
                             )
                         }
                     },
-                    onSuccess = { actions ->
+                    onSuccess = {
                         _state.update { state ->
                             state.copy(
                                 submitLoading = false,
                                 submitSuccess = true
                             )
                         }
-
-                        if (actions[Actions.USER_VERIFICATION] != null) {
-                            navigator.navigate(VerificationDestination(VerificationAction.UserVerification))
-                        } else {
-                            toaster.show(
-                                ToastMessage(
-                                    message = getString(Res.string.error_verification_action_not_triggered)
-                                )
-                            )
-                        }
+                        navigator.replaceAll(HomeDestination)
                     }
                 )
             }
         }
     }
 
-    private fun navigateToSignIn() {
-        navigator.pop()
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    private fun checkEmailTaken() {
+        scope.launch {
+            uRepository.checkEmail(formState.value.email).collect { result ->
+                result.onSuccess { available ->
+                    formState.update { it.copy(isEmailTaken = !available) }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    private fun checkUsernameTaken() {
+        scope.launch {
+            uRepository.checkUsername(formState.value.username).collect { result ->
+                result.onSuccess { available ->
+                    formState.update { it.copy(isUsernameTaken = !available) }
+                }
+            }
+        }
     }
 }

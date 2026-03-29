@@ -12,4 +12,6 @@ sealed interface SignUpEvents {
     data object ToggleConfirmPasswordVisibility : SignUpEvents
     data object OnSubmit : SignUpEvents
     data object OnNavigateToSignIn : SignUpEvents
+    data object OnCheckEmailTaken : SignUpEvents
+    data object OnCheckUsernameTaken : SignUpEvents
 }

@@ -40,7 +40,7 @@ include(
 include(":sharedUI")
 
 include(
-    ":core:models",
+    ":core:models:models-core",
     ":core:models:models-api",
     ":core:models:models-shared",
 )
@@ -59,7 +59,8 @@ include(
     ":features:auth:session",
     ":features:auth:signin",
     ":features:auth:signup",
-    ":features:auth:verification",
 )
 
 include(":features:user")
+
+include(":features:verification")

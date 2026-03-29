@@ -4,20 +4,12 @@ import com.diva.database.session.SessionStorage
 import com.diva.database.user.UserStorage
 import com.diva.models.Repository
 import com.diva.models.api.user.dtos.UpdateUserDto
-import com.diva.models.api.user.dtos.UserEmailDto
-import com.diva.models.api.verification.dtos.EmailTokenDto
-import com.diva.models.auth.Session
 import com.diva.models.auth.SignUpForm
-import com.diva.models.preferences.PreferenceType
 import com.diva.models.user.User
-import com.diva.models.user.preferences.UserPreferences
-import com.diva.user.api.client.UserNetworkClient
+import com.diva.user.api.client.UserApi
 import io.github.juevigrace.diva.core.DivaResult
-import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.errors.DivaError
-import io.github.juevigrace.diva.core.errors.ErrorCause
 import io.github.juevigrace.diva.core.fold
-import io.github.juevigrace.diva.core.getOrThrow
 import io.github.juevigrace.diva.core.onFailure
 import io.github.juevigrace.diva.core.onSuccess
 import io.github.juevigrace.diva.core.pagination.Pagination
@@ -32,12 +24,15 @@ import kotlinx.coroutines.launch
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-// TODO: break down
 interface UserRepository : Repository {
     fun getUsers(page: Int, pageSize: Int): Flow<DivaResult<Pagination<User>, DivaError>>
 
     @OptIn(ExperimentalUuidApi::class)
     fun getUserById(id: Uuid): Flow<DivaResult<User, DivaError>>
+
+    fun checkEmail(email: String): Flow<DivaResult<Boolean, DivaError>>
+
+    fun checkUsername(username: String): Flow<DivaResult<Boolean, DivaError>>
 
     fun createUser(form: SignUpForm): Flow<DivaResult<String, DivaError>>
 
@@ -46,34 +41,12 @@ interface UserRepository : Repository {
 
     @OptIn(ExperimentalUuidApi::class)
     fun deleteUser(id: Uuid): Flow<DivaResult<Unit, DivaError>>
-
-    fun updateMe(user: User): Flow<DivaResult<Unit, DivaError>>
-
-    fun deleteMe(): Flow<DivaResult<Unit, DivaError>>
-
-    fun requestEmailUpdate(email: String): Flow<DivaResult<Unit, DivaError>>
-
-    fun confirmEmailUpdate(token: String): Flow<DivaResult<Unit, DivaError>>
-
-    fun updateEmail(email: String): Flow<DivaResult<Unit, DivaError>>
-
-    fun getLocalPreferences(): Flow<DivaResult<UserPreferences, DivaError>>
-
-    fun createPreferences(prefs: UserPreferences): Flow<DivaResult<Unit, DivaError>>
-
-    fun updatePreferences(prefs: UserPreferences): Flow<DivaResult<Unit, DivaError>>
-
-    @OptIn(ExperimentalUuidApi::class)
-    fun updateLocalPrefUserId(id: Uuid): Flow<DivaResult<Unit, DivaError>>
-
-    fun syncPreferences(): Flow<DivaResult<Unit, DivaError>>
 }
 
-// TODO: make local database logic
 class UserRepositoryImpl(
     private val sessionStorage: SessionStorage,
     private val userStorage: UserStorage,
-    private val userClient: UserNetworkClient
+    private val userClient: UserApi
 ) : UserRepository {
     override fun getUsers(
         page: Int,
@@ -129,6 +102,22 @@ class UserRepositoryImpl(
         }.flowOn(Dispatchers.IO)
     }
 
+    override fun checkEmail(email: String): Flow<DivaResult<Boolean, DivaError>> {
+        return flow {
+            userClient.checkEmail(email)
+                .onFailure { err -> emit(DivaResult.failure(err)) }
+                .onSuccess { res -> emit(DivaResult.success(res)) }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun checkUsername(username: String): Flow<DivaResult<Boolean, DivaError>> {
+        return flow {
+            userClient.checkUsername(username)
+                .onFailure { err -> emit(DivaResult.failure(err)) }
+                .onSuccess { res -> emit(DivaResult.success(res)) }
+        }.flowOn(Dispatchers.IO)
+    }
+
     override fun createUser(form: SignUpForm): Flow<DivaResult<String, DivaError>> {
         return withSession(sessionStorage::getCurrentSession) { value ->
             userClient.create(form.toSignUpDto().user, value.accessToken)
@@ -160,136 +149,6 @@ class UserRepositoryImpl(
         return withSession(sessionStorage::getCurrentSession) { value ->
             userClient.delete(id.toString(), value.accessToken)
                 .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
-        }
-    }
-
-    override fun updateMe(user: User): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
-            userClient.updateMe(
-                UpdateUserDto(
-                    alias = user.alias,
-                    birthDate = user.birthDate.toEpochMilliseconds(),
-                    bio = user.bio,
-                    avatar = user.avatar
-                ),
-                value.accessToken
-            )
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
-        }
-    }
-
-    override fun deleteMe(): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
-            userClient.deleteMe(value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
-        }
-    }
-
-    override fun requestEmailUpdate(email: String): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
-            userClient.requestEmailUpdate(UserEmailDto(email), value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
-        }
-    }
-
-    override fun confirmEmailUpdate(token: String): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
-            userClient.confirmEmailUpdate(EmailTokenDto(token), value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
-        }
-    }
-
-    override fun updateEmail(email: String): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
-            userClient.updateEmail(UserEmailDto(email), value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
-        }
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override fun getLocalPreferences(): Flow<DivaResult<UserPreferences, DivaError>> {
-        return flow {
-            userStorage.findLocalPreferences()
-                .onFailure { emit(DivaResult.failure(it)) }
-                .onSuccess { opt ->
-                    opt.fold(
-                        onNone = {
-                            emit(DivaResult.failure(DivaError(ErrorCause.Validation.MissingValue("preferences"))))
-                        },
-                        onSome = { prefs ->
-                            emit(DivaResult.success(prefs))
-                        }
-                    )
-                }
-        }.flowOn(Dispatchers.IO)
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override fun createPreferences(prefs: UserPreferences): Flow<DivaResult<Unit, DivaError>> {
-        return flow {
-            val res = when (prefs.type) {
-                PreferenceType.LOCAL -> userStorage.insertLocalPreferences(prefs)
-                PreferenceType.CLOUD -> {
-                    val session: Option<Session> = sessionStorage.getCurrentSession().getOrThrow()
-                    session.fold(
-                        onNone = {
-                            return@flow emit(
-                                DivaResult.failure(
-                                    DivaError(
-                                        ErrorCause.Validation.MissingValue("session")
-                                    )
-                                )
-                            )
-                        },
-                        onSome = { value ->
-                            userStorage.insertCloudPreferences(value.user.id, prefs)
-                        }
-                    )
-                }
-            }
-            res
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess {
-                    emit(DivaResult.success(Unit))
-                }
-        }.flowOn(Dispatchers.IO)
-    }
-
-    override fun updatePreferences(prefs: UserPreferences): Flow<DivaResult<Unit, DivaError>> {
-        return flow {
-            userStorage.updatePreferences(prefs)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
-        }.flowOn(Dispatchers.IO)
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override fun updateLocalPrefUserId(id: Uuid): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
-            userStorage.updatePreferenceUserId(id, value.user.id)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
-        }
-    }
-
-    override fun syncPreferences(): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
-            userClient.updatePreferences(value.user.preferences.toPreferenceDto(), value.accessToken)
-                .onFailure { err ->
-                    // TODO: check in api which error is returned, if not able to update because
-                    // preferences are not found then create them
-                    if (err.cause is ErrorCause.Validation.MissingValue) {
-                        userClient.createPreferences(value.user.preferences.toPreferenceDto(), value.accessToken)
-                            .onFailure { err -> emit(DivaResult.failure(err)) }
-                            .onSuccess { emit(DivaResult.success(Unit)) }
-                    }
-                }
                 .onSuccess { emit(DivaResult.success(Unit)) }
         }
     }

@@ -8,8 +8,6 @@ import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.ForgotDestination
 import com.diva.ui.navigation.SignInDestination
 import com.diva.ui.navigation.SignUpDestination
-import com.diva.ui.navigation.VerificationDestination
-import com.diva.verification.presentation.ui.screen.VerificationScreen
 
 fun EntryProviderScope<Destination>.authEntries() {
     entry<SignInDestination> {
@@ -20,8 +18,5 @@ fun EntryProviderScope<Destination>.authEntries() {
     }
     entry<ForgotDestination> { destination ->
         ForgotScreen(destination.action)
-    }
-    entry<VerificationDestination> { destination ->
-        VerificationScreen(destination.action)
     }
 }

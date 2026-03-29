@@ -1,13 +1,18 @@
 package com.diva.auth.signUp.data.validation
 
 import com.diva.core.ui.resources.Res
+import com.diva.core.ui.resources.email_taken
 import com.diva.core.ui.resources.field_required
-import com.diva.core.ui.resources.invalid_phone_number
+import com.diva.core.ui.resources.invalid_email
 import com.diva.core.ui.resources.password_mismatch
 import com.diva.core.ui.resources.password_too_short
 import com.diva.core.ui.resources.privacy_required
 import com.diva.core.ui.resources.terms_required
+import com.diva.core.ui.resources.username_taken
+import com.diva.core.ui.resources.username_too_short
 import com.diva.models.auth.SignUpForm
+import com.diva.models.validation.EmailValidation
+import com.diva.models.validation.UsernameValidation
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.validation.ValidationResult
 import io.github.juevigrace.diva.core.validation.Validator
@@ -16,8 +21,8 @@ import org.jetbrains.compose.resources.StringResource
 object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
     override fun validate(form: SignUpForm): SignUpValidation {
         return SignUpValidation(
-            emailError = validateEmail(form.email),
-            usernameError = validateUsername(form.username),
+            emailError = validateEmail(form.email, form.isEmailTaken),
+            usernameError = validateUsername(form.username, form.isUsernameTaken),
             passwordError = validatePassword(form.password),
             confirmPasswordError = validateConfirmPassword(form.password, form.confirmPassword),
             termsError = validateTerms(form.termsAndConditions),
@@ -25,19 +30,37 @@ object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
         )
     }
 
-    private fun validateEmail(email: String): Option<StringResource> {
-        return if (email.isBlank()) {
-            Option.Some(Res.string.field_required)
-        } else {
-            Option.None
+    private fun validateEmail(email: String, isTaken: Boolean = false): Option<StringResource> {
+        return when {
+            email.isBlank() -> {
+                Option.Some(Res.string.field_required)
+            }
+            !EmailValidation.isValid(email) -> {
+                Option.Some(Res.string.invalid_email)
+            }
+            isTaken -> {
+                Option.Some(Res.string.email_taken)
+            }
+            else -> {
+                Option.None
+            }
         }
     }
 
-    private fun validateUsername(username: String): Option<StringResource> {
-        return if (username.isBlank()) {
-            Option.Some(Res.string.field_required)
-        } else {
-            Option.None
+    private fun validateUsername(username: String, isTaken: Boolean): Option<StringResource> {
+        return when {
+            username.isBlank() -> {
+                Option.Some(Res.string.field_required)
+            }
+            !UsernameValidation.isValid(username) -> {
+                Option.Some(Res.string.username_too_short)
+            }
+            isTaken -> {
+                Option.Some(Res.string.username_taken)
+            }
+            else -> {
+                Option.None
+            }
         }
     }
 

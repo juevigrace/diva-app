@@ -1,8 +1,7 @@
 import divabuild.internal.libs
 
 plugins {
-    id("divabuild.library-kmp-base")
-    id("divabuild.library-targets")
+    id("divabuild.library")
     id("divabuild.setup-compose-multiplatform")
     id("divabuild.serialization")
 }
@@ -15,6 +14,8 @@ kotlin {
         }
 
         commonMain.dependencies {
+            api(project(":core:models:models-core"))
+
             api(libs.diva.ui)
 
             api(libs.koin.core)

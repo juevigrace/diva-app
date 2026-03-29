@@ -4,7 +4,7 @@ import com.diva.onboarding.presentation.events.OnboardingEvents
 import com.diva.onboarding.presentation.state.OnboardingState
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.SignInDestination
-import com.diva.user.data.UserRepository
+import com.diva.user.data.preferences.UserPreferencesRepository
 import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.core.onFailure
 import io.github.juevigrace.diva.ui.navigation.Navigator
@@ -18,7 +18,7 @@ import kotlin.uuid.ExperimentalUuidApi
 
 class OnboardingViewModel(
     private val navigator: Navigator<Destination>,
-    private val uRepository: UserRepository
+    private val prefsRepository: UserPreferencesRepository
 ) : DivaViewModel() {
     private val _state = MutableStateFlow(OnboardingState())
     val state: StateFlow<OnboardingState> = _state.asStateFlow()
@@ -35,11 +35,11 @@ class OnboardingViewModel(
     @OptIn(ExperimentalUuidApi::class)
     private fun handleOnboardingCompleted() {
         scope.launch {
-            uRepository.getLocalPreferences().collect { lRes ->
+            prefsRepository.getLocalPreferences().collect { lRes ->
                 lRes.fold(
                     onFailure = { println(it) },
                     onSuccess = { prefs ->
-                        uRepository.updatePreferences(prefs.copy(onboardingCompleted = true)).collect { uRes ->
+                        prefsRepository.updatePreferences(prefs.copy(onboardingCompleted = true)).collect { uRes ->
                             uRes.onFailure { println(it) }
                         }
                     }

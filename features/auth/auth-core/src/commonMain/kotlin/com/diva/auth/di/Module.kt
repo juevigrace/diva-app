@@ -6,7 +6,6 @@ import com.diva.auth.forgot.di.forgotModule
 import com.diva.auth.session.di.sessionModule
 import com.diva.auth.signIn.di.signInModule
 import com.diva.auth.signUp.di.signUpModule
-import com.diva.verification.di.verificationModule
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
@@ -21,7 +20,6 @@ fun authModule(): Module {
             sessionModule(),
             signInModule(),
             signUpModule(),
-            verificationModule()
         )
     }
 }

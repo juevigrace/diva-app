@@ -2,9 +2,6 @@ package com.diva.auth.signIn.data
 
 import com.diva.auth.data.api.client.AuthNetworkClient
 import com.diva.database.session.SessionStorage
-import com.diva.models.actions.Actions
-import com.diva.models.actions.AppActions
-import com.diva.models.actions.toAction
 import com.diva.models.auth.Session
 import com.diva.models.auth.SignInForm
 import io.github.juevigrace.diva.core.DivaResult
@@ -19,7 +16,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 
 interface SignInRepository {
-    fun signIn(form: SignInForm): Flow<DivaResult<Map<Actions, AppActions>, DivaError>>
+    fun signIn(form: SignInForm): Flow<DivaResult<Unit, DivaError>>
 }
 
 class SignInRepositoryImpl(
@@ -27,12 +24,12 @@ class SignInRepositoryImpl(
     private val sessionStorage: SessionStorage,
 ) : SignInRepository {
     @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
-    override fun signIn(form: SignInForm): Flow<DivaResult<Map<Actions, AppActions>, DivaError>> {
+    override fun signIn(form: SignInForm): Flow<DivaResult<Unit, DivaError>> {
         return flow {
             authClient.signIn(form.toSignInDto())
                 .onFailure { err -> emit(DivaResult.failure(err)) }
                 .onSuccess { res ->
-                    val session = Session.fromResponse(res.session)
+                    val session = Session.fromResponse(res)
                     sessionStorage
                         .insert(session)
                         .onFailure { err -> emit(DivaResult.failure(err)) }
@@ -43,10 +40,7 @@ class SignInRepositoryImpl(
                                         .onFailure { err -> println("panik: ${err.message}") }
                                     emit(DivaResult.failure(err))
                                 }
-                            val actions = res.actions.map { aRes -> aRes.toAction() }
-                            emit(
-                                DivaResult.success(actions.associateWith { AppActions.fromAction(it) })
-                            )
+                            emit(DivaResult.success(Unit))
                         }
                 }
         }.flowOn(Dispatchers.Default)

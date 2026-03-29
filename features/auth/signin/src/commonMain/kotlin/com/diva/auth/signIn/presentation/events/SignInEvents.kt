@@ -10,8 +10,8 @@ sealed interface SignInEvents {
     data object TogglePassword : SignInEvents
 
     /* Navigation */
-    data class OnForgot(val action: ForgotAction) : SignInEvents
-    data object OnSignUp : SignInEvents
+    data class OnNavigateToForgot(val action: ForgotAction) : SignInEvents
+    data object OnNavigateToSignUp : SignInEvents
 
     /* Actions */
     data class OnSocialLogin(val provider: SocialProvider) : SignInEvents

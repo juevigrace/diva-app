@@ -8,6 +8,8 @@ kotlin {
             implementation(projects.features.auth.authShared)
 
             implementation(projects.features.auth.session)
+
+            implementation(projects.features.user)
         }
     }
 }

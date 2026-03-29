@@ -1,0 +1,2 @@
+- Errors
+  - refactor error handling, refactor framework errors.
