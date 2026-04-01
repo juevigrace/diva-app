@@ -1,7 +1,10 @@
 package com.diva.app.di
 
+import com.diva.app.data.AppRepository
+import com.diva.app.data.AppRepositoryImpl
 import com.diva.app.di.database.databaseModule
 import com.diva.app.di.network.networkModule
+import com.diva.app.di.services.servicesModule
 import com.diva.app.di.ui.uiModule
 import com.diva.app.home.di.homeModule
 import com.diva.app.presentation.viewmodel.AppViewModel
@@ -11,6 +14,8 @@ import com.diva.onboarding.di.onboardingModule
 import com.diva.user.di.userModule
 import com.diva.verification.di.verificationModule
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -26,12 +31,15 @@ fun appModule(config: AppConfig): Module {
         includes(
             homeModule(),
             onboardingModule(),
+            servicesModule(),
         )
         includes(
             authModule(),
             userModule(),
             verificationModule(),
         )
+
+        singleOf(::AppRepositoryImpl) { bind<AppRepository>() }
 
         viewModelOf(::AppViewModel)
     }

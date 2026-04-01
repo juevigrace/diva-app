@@ -1,11 +1,12 @@
 package com.diva.auth.signIn.data
 
-import com.diva.auth.data.api.client.AuthNetworkClient
-import com.diva.database.session.SessionStorage
+import com.diva.auth.data.api.client.AuthApi
+import com.diva.auth.session.data.SessionRepository
 import com.diva.models.auth.Session
 import com.diva.models.auth.SignInForm
 import io.github.juevigrace.diva.core.DivaResult
 import io.github.juevigrace.diva.core.errors.DivaError
+import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.core.onFailure
 import io.github.juevigrace.diva.core.onSuccess
 import kotlinx.coroutines.Dispatchers
@@ -20,8 +21,8 @@ interface SignInRepository {
 }
 
 class SignInRepositoryImpl(
-    private val authClient: AuthNetworkClient,
-    private val sessionStorage: SessionStorage,
+    private val authClient: AuthApi,
+    private val sessionRepository: SessionRepository,
 ) : SignInRepository {
     @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
     override fun signIn(form: SignInForm): Flow<DivaResult<Unit, DivaError>> {
@@ -30,18 +31,12 @@ class SignInRepositoryImpl(
                 .onFailure { err -> emit(DivaResult.failure(err)) }
                 .onSuccess { res ->
                     val session = Session.fromResponse(res)
-                    sessionStorage
-                        .insert(session)
-                        .onFailure { err -> emit(DivaResult.failure(err)) }
-                        .onSuccess {
-                            sessionStorage.update(session.copy(isCurrent = true))
-                                .onFailure { err ->
-                                    sessionStorage.delete(session.id)
-                                        .onFailure { err -> println("panik: ${err.message}") }
-                                    emit(DivaResult.failure(err))
-                                }
-                            emit(DivaResult.success(Unit))
-                        }
+                    sessionRepository.newSession(session).collect { result ->
+                        result.fold(
+                            onFailure = { err -> emit(DivaResult.failure(err)) },
+                            onSuccess = { emit(DivaResult.success(Unit)) }
+                        )
+                    }
                 }
         }.flowOn(Dispatchers.Default)
     }

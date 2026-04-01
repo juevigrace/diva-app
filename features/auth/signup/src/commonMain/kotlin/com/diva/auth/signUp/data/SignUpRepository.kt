@@ -1,6 +1,6 @@
 package com.diva.auth.signUp.data
 
-import com.diva.auth.data.api.client.AuthNetworkClient
+import com.diva.auth.data.api.client.AuthApi
 import com.diva.database.session.SessionStorage
 import com.diva.models.Repository
 import com.diva.models.auth.Session
@@ -20,7 +20,7 @@ interface SignUpRepository : Repository {
 }
 
 class SignUpRepositoryImpl(
-    private val authClient: AuthNetworkClient,
+    private val authClient: AuthApi,
     private val sessionStorage: SessionStorage,
 ) : SignUpRepository {
     @OptIn(ExperimentalUuidApi::class)

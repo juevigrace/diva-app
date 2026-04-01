@@ -14,7 +14,7 @@ interface UserActionsStorage {
     suspend fun getAllByUser(userId: Uuid): DivaResult<List<UserAction>, DivaError>
 
     @OptIn(ExperimentalUuidApi::class)
-    fun getAllFlow(userId: Uuid): Flow<DivaResult<List<UserAction>, DivaError>>
+    fun getAllByUserFlow(userId: Uuid): Flow<DivaResult<List<UserAction>, DivaError>>
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getOne(id: Uuid): DivaResult<Option<UserAction>, DivaError>

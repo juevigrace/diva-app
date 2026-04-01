@@ -8,5 +8,7 @@ data class AppState(
     val preferences: UserPreferences = UserPreferences(),
     val prefTries: Int = 0,
     val panic: Boolean = false,
-    val shouldNavigate: Boolean = false
+    val shouldNavigate: Boolean = false,
+    val sessionLoading: Boolean = false,
+    val sessionSuccess: Boolean = false,
 )

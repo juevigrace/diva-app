@@ -50,6 +50,7 @@
     <string name="cancel">Cancel</string>
     <string name="submit">Submit</string>
     <string name="success">Success</string>
+    <string name="verification">Verification</string>
     <!--PLACEHOLDERS-->
     <string name="email_placeholder">example@email.com</string>
     <string name="username_placeholder">johndoe</string>

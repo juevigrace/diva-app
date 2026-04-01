@@ -25,7 +25,7 @@ class UserActionsStorageImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun getAllFlow(userId: Uuid): Flow<DivaResult<List<UserAction>, DivaError>> {
+    override fun getAllByUserFlow(userId: Uuid): Flow<DivaResult<List<UserAction>, DivaError>> {
         return db.getListAsFlow {
             userActionsQueries.findAllByUser(user_id = userId.toString(), mapper = ::mapToEntity)
         }

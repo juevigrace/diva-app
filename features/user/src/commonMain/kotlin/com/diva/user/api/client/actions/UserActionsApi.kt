@@ -36,7 +36,10 @@ class UserActionsApiImpl(
         return tryResult(
             onError = { e -> e.toDivaError() }
         ) {
-            client.get(path = "/api/user/me/actions").flatMap { response ->
+            client.get(
+                path = "/api/user/me/actions",
+                headers = mapOf("Authorization" to "Bearer $token")
+            ).flatMap { response ->
                 when (response.status) {
                     HttpStatusCode.OK -> {
                         val body: ApiResponse<List<ActionResponse>> = response.body()

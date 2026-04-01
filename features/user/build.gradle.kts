@@ -10,6 +10,8 @@ kotlin {
 
             implementation(projects.core.ui)
 
+            implementation(projects.features.auth.session)
+
             implementation(libs.diva.network.client)
         }
     }

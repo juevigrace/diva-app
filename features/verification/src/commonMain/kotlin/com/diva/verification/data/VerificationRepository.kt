@@ -1,6 +1,6 @@
 package com.diva.verification.data
 
-import com.diva.database.session.SessionStorage
+import com.diva.auth.session.data.SessionRepository
 import com.diva.database.user.actions.UserActionsStorage
 import com.diva.models.Repository
 import com.diva.models.actions.Actions
@@ -12,6 +12,7 @@ import com.diva.verification.data.api.client.VerificationApi
 import io.github.juevigrace.diva.core.DivaResult
 import io.github.juevigrace.diva.core.errors.DivaError
 import io.github.juevigrace.diva.core.errors.ErrorCause
+import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.core.onFailure
 import io.github.juevigrace.diva.core.onSuccess
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.fold
 import kotlin.uuid.ExperimentalUuidApi
 
 interface VerificationRepository : Repository {
@@ -30,7 +32,7 @@ interface VerificationRepository : Repository {
 class VerificationRepositoryImpl(
     private val api: VerificationApi,
     private val uaRepository: UserActionsStorage,
-    private val sessionStorage: SessionStorage,
+    private val sRepository: SessionRepository,
 ) : VerificationRepository {
     override suspend fun requestVerification(
         email: String,
@@ -67,17 +69,18 @@ class VerificationRepositoryImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     private fun handleUserVerification(token: String): Flow<DivaResult<Unit, DivaError>> {
-        return withSessionFlow(sessionStorage::getCurrentSessionFlow) { session ->
+        return withSession(sRepository::getCurrent) { session ->
             api.verifyWithAuth(
                 dto = VerificationDto(token, session.data.toSessionDataDto()),
                 token = session.accessToken
-            )
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess {
+            ).fold(
+                onFailure = { err -> emit(DivaResult.failure(err)) },
+                onSuccess = {
                     uaRepository.deleteByAction(Actions.USER_VERIFICATION, session.user.id)
                         .onFailure { err -> emit(DivaResult.failure(err)) }
                     emit(DivaResult.success(Unit))
                 }
+            )
         }
     }
 
@@ -87,11 +90,12 @@ class VerificationRepositoryImpl(
                 .onFailure { err -> emit(DivaResult.failure(err)) }
                 .onSuccess { res ->
                     val session = Session.fromResponse(res)
-                    sessionStorage.insert(session)
-                        .onFailure { err -> emit(DivaResult.failure(err)) }
-                        .onSuccess {
-                            emit(DivaResult.success(Unit))
-                        }
+                    sRepository.newSession(session).collect { result ->
+                        result.fold(
+                            onFailure = { err -> emit(DivaResult.failure(err)) },
+                            onSuccess = { emit(DivaResult.success(Unit)) }
+                        )
+                    }
                 }
         }.flowOn(Dispatchers.IO)
     }

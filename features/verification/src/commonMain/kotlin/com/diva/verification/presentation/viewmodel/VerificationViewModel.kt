@@ -1,6 +1,5 @@
 package com.diva.verification.presentation.viewmodel
 
-import com.diva.auth.forgot.data.ForgotRepository
 import com.diva.core.ui.resources.Res
 import com.diva.core.ui.resources.error_action_not_specified
 import com.diva.models.actions.Actions
@@ -9,7 +8,6 @@ import com.diva.ui.messages.toToast
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.HomeDestination
 import com.diva.ui.navigation.arguments.VerificationAction
-import com.diva.user.data.me.UserMeRepository
 import com.diva.verification.data.VerificationRepository
 import com.diva.verification.data.validation.VerificationValidation
 import com.diva.verification.data.validation.VerificationValidator

@@ -1,6 +1,6 @@
 package com.diva.user.data.actions
 
-import com.diva.database.session.SessionStorage
+import com.diva.auth.session.data.SessionRepository
 import com.diva.database.user.actions.UserActionsStorage
 import com.diva.models.Repository
 import com.diva.models.actions.Actions
@@ -20,6 +20,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface UserActionsRepository : Repository {
+    fun fetchActions(): Flow<DivaResult<Unit, DivaError>>
     fun getActions(): Flow<DivaResult<Map<Actions, UserAction>, DivaError>>
     fun getAction(action: Actions): Flow<DivaResult<Actions, DivaError>>
     fun syncActions(): Flow<DivaResult<Unit, DivaError>>
@@ -28,13 +29,14 @@ interface UserActionsRepository : Repository {
 class UserActionsRepositoryImpl(
     private val api: UserActionsApi,
     private val storage: UserActionsStorage,
-    private val sessionStorage: SessionStorage,
+    private val sessionRepository: SessionRepository,
 ) : UserActionsRepository {
     @OptIn(ExperimentalUuidApi::class)
-    override fun getActions(): Flow<DivaResult<Map<Actions, UserAction>, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { session ->
-            api.getActions(session.accessToken)
-                .onSuccess { res ->
+    override fun fetchActions(): Flow<DivaResult<Unit, DivaError>> {
+        return withSession(sessionRepository::getCurrent) { session ->
+            api.getActions(session.accessToken).fold(
+                onFailure = { err -> emit(DivaResult.failure(err)) },
+                onSuccess = { res ->
                     val actions = res.mapNotNull { actionRes ->
                         val action = safeActionsValueOf(actionRes.actionName)
                         if (action == Actions.UNKNOWN) {
@@ -50,20 +52,38 @@ class UserActionsRepositoryImpl(
                         )
                         uAction
                     }
-                    storage.insertAll(mapOf(session.user.id to actions))
+                    storage.insertAll(mapOf(session.user.id to actions)).fold(
+                        onFailure = { err -> emit(DivaResult.failure(err)) },
+                        onSuccess = { emit(DivaResult.success(Unit)) }
+                    )
                 }
+            )
+        }
+    }
 
-            storage.getAllByUser(session.user.id)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { actions ->
-                    emit(DivaResult.success(actions.associateBy { it.action }))
-                }
+    @OptIn(ExperimentalUuidApi::class)
+    override fun getActions(): Flow<DivaResult<Map<Actions, UserAction>, DivaError>> {
+        return withSession(sessionRepository::getCurrent) { session ->
+            println("Getting actions for $session")
+            storage.getAllByUserFlow(session.user.id).collect { result ->
+                result.fold(
+                    onFailure = { err -> emit(DivaResult.failure(err)) },
+                    onSuccess = { actions ->
+                        if (actions.isEmpty()) {
+                            fetchActions().collect { res ->
+                                res.onFailure { err -> emit(DivaResult.failure(err)) }
+                            }
+                        }
+                        emit(DivaResult.success(actions.associateBy { it.action }))
+                    }
+                )
+            }
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
     override fun getAction(action: Actions): Flow<DivaResult<Actions, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { session ->
+        return withSession(sessionRepository::getCurrent) { session ->
             storage.getOneByAction(action, session.user.id)
                 .onFailure { err -> emit(DivaResult.failure(err)) }
                 .onSuccess { option ->
@@ -90,7 +110,7 @@ class UserActionsRepositoryImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     override fun syncActions(): Flow<DivaResult<Unit, DivaError>> {
-        return withSessionFlow(sessionStorage::getCurrentSessionFlow) { session ->
+        return withSession(sessionRepository::getCurrent) { session ->
             api.streamActions(session.accessToken).collect { result ->
                 result.fold(
                     onFailure = { err -> emit(DivaResult.failure(err)) },

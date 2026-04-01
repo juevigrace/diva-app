@@ -1,6 +1,6 @@
 package com.diva.user.data.preferences
 
-import com.diva.database.session.SessionStorage
+import com.diva.auth.session.data.SessionRepository
 import com.diva.database.user.preferences.UserPreferencesStorage
 import com.diva.models.Repository
 import com.diva.models.user.preferences.UserPreferences
@@ -22,7 +22,9 @@ import kotlin.uuid.Uuid
 interface UserPreferencesRepository : Repository {
     fun getLocalPreferences(): Flow<DivaResult<UserPreferences, DivaError>>
 
-    fun createLocalPreferences(prefs: UserPreferences): Flow<DivaResult<Unit, DivaError>>
+    fun createLocalPreferences(): Flow<DivaResult<Unit, DivaError>>
+
+    fun getUserPreferences(): Flow<DivaResult<UserPreferences, DivaError>>
 
     fun createCloudPreferences(prefs: UserPreferences): Flow<DivaResult<Unit, DivaError>>
 
@@ -35,7 +37,7 @@ interface UserPreferencesRepository : Repository {
 }
 
 class UserPreferencesRepositoryImpl(
-    private val sessionStorage: SessionStorage,
+    private val sessionRepository: SessionRepository,
     private val storage: UserPreferencesStorage,
     private val client: UserPreferencesApi,
 ) : UserPreferencesRepository {
@@ -58,8 +60,9 @@ class UserPreferencesRepositoryImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun createLocalPreferences(prefs: UserPreferences): Flow<DivaResult<Unit, DivaError>> {
+    override fun createLocalPreferences(): Flow<DivaResult<Unit, DivaError>> {
         return flow {
+            val prefs = UserPreferences(id = Uuid.random())
             storage.insertLocal(prefs)
                 .onFailure { err -> emit(DivaResult.failure(err)) }
                 .onSuccess {
@@ -68,9 +71,13 @@ class UserPreferencesRepositoryImpl(
         }.flowOn(Dispatchers.IO)
     }
 
+    override fun getUserPreferences(): Flow<DivaResult<UserPreferences, DivaError>> {
+        return withSession(sessionRepository::getCurrent) {}
+    }
+
     @OptIn(ExperimentalUuidApi::class)
     override fun createCloudPreferences(prefs: UserPreferences): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { session ->
+        return withSession(sessionRepository::getCurrent) { session ->
             storage.insertCloud(prefs, session.user.id)
                 .onFailure { err -> emit(DivaResult.failure(err)) }
                 .onSuccess { emit(DivaResult.success(Unit)) }
@@ -87,7 +94,7 @@ class UserPreferencesRepositoryImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     override fun updateLocalPrefUserId(id: Uuid): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
+        return withSession(sessionRepository::getCurrent) { value ->
             storage.updateUserId(id, value.user.id)
                 .onFailure { err -> emit(DivaResult.failure(err)) }
                 .onSuccess { emit(DivaResult.success(Unit)) }
@@ -95,7 +102,7 @@ class UserPreferencesRepositoryImpl(
     }
 
     override fun syncPreferences(): Flow<DivaResult<Unit, DivaError>> {
-        return withSession(sessionStorage::getCurrentSession) { value ->
+        return withSession(sessionRepository::getCurrent) { value ->
             client.updatePreferences(value.user.preferences.toPreferenceDto(), value.accessToken)
                 .onFailure { err ->
                     // TODO: check in api which error is returned, if not able to update because

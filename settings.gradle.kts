@@ -50,6 +50,7 @@ include(":core:ui")
 include(
     ":features:app:home",
     ":features:app:onboarding",
+    ":features:app:services",
 )
 
 include(

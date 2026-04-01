@@ -73,6 +73,7 @@ SELECT
   s.user_agent AS userAgent,
   s.expires_at AS expiresAt,
   s.created_at AS createdAt,
-  s.updated_at AS updatedAt
+  s.updated_at AS updatedAt,
+  s.user_id AS userId
 FROM diva_session s
 WHERE s.is_current = 1;

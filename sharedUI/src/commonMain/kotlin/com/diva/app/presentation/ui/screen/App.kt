@@ -34,9 +34,9 @@ fun App() {
     val toaster: Toaster = koinInject()
     val navigator: Navigator<Destination> = koinInject()
 
-    LaunchedEffect(state.shouldNavigate) {
+    LaunchedEffect(state.shouldNavigate, state.sessionLoading) {
         delay(1000)
-        if (state.shouldNavigate) {
+        if (state.shouldNavigate && !state.sessionLoading) {
             viewModel.handleNavigation()
         }
     }

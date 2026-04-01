@@ -48,6 +48,7 @@
     <string name="cancel">Cancelar</string>
     <string name="submit">Enviar</string>
     <string name="success">Éxito</string>
+    <string name="verification">Verficación</string>
     <!--PLACEHOLDERS-->
     <string name="email_placeholder">ejemplo@correo.com</string>
     <string name="username_placeholder">juan123</string>

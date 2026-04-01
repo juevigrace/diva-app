@@ -11,6 +11,8 @@ kotlin {
             implementation(projects.features.app.home)
             implementation(projects.features.app.onboarding)
 
+            implementation(projects.features.app.services)
+
             implementation(projects.features.auth.authCore)
 
             implementation(projects.features.user)

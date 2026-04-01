@@ -1,5 +1,6 @@
 plugins {
-    id("divabuild.library-ui")
+    id("divabuild.library")
+    id("divabuild.serialization")
 }
 
 kotlin {
@@ -7,12 +8,8 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.database)
 
-            implementation(projects.core.ui)
-
+            implementation(projects.features.auth.authShared)
             implementation(projects.features.auth.session)
-
-            implementation(projects.features.auth.forgot)
-
             implementation(projects.features.user)
 
             implementation(libs.diva.network.client)

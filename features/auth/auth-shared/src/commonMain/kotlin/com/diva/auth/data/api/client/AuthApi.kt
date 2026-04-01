@@ -21,7 +21,7 @@ import io.github.juevigrace.diva.network.client.toHttpStatusCodes
 import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
 
-interface AuthNetworkClient {
+interface AuthApi {
     suspend fun signIn(dto: SignInDto): DivaResult<SessionResponse, DivaError>
     suspend fun signUp(dto: SignUpDto): DivaResult<SessionResponse, DivaError>
     suspend fun signOut(token: String): DivaResult<Unit, DivaError>
@@ -30,9 +30,9 @@ interface AuthNetworkClient {
     suspend fun forgotPasswordReset(dto: UpdatePasswordDto, token: String): DivaResult<Unit, DivaError>
 }
 
-class AuthNetworkClientImpl(
+class AuthApiImpl(
     private val client: DivaClient
-) : AuthNetworkClient {
+) : AuthApi {
     override suspend fun signIn(dto: SignInDto): DivaResult<SessionResponse, DivaError> {
         return tryResult(
             onError = { e -> e.toDivaError() }
@@ -55,7 +55,7 @@ class AuthNetworkClientImpl(
                             )
                     }
                     else -> {
-                        val body: ApiResponse<Nothing> = response.body()
+                        val body: ApiResponse<Unit> = response.body()
                         DivaResult.failure(
                             DivaError(
                                 cause = ErrorCause.Network.Error(
@@ -94,7 +94,7 @@ class AuthNetworkClientImpl(
                             )
                     }
                     else -> {
-                        val body: ApiResponse<Nothing> = response.body()
+                        val body: ApiResponse<Unit> = response.body()
                         DivaResult.failure(
                             DivaError(
                                 cause = ErrorCause.Network.Error(
@@ -122,7 +122,7 @@ class AuthNetworkClientImpl(
                 when (response.status) {
                     HttpStatusCode.OK -> DivaResult.success(Unit)
                     else -> {
-                        val body: ApiResponse<Nothing> = response.body()
+                        val body: ApiResponse<Unit> = response.body()
                         DivaResult.failure(
                             DivaError(
                                 cause = ErrorCause.Network.Error(
@@ -150,7 +150,7 @@ class AuthNetworkClientImpl(
                 when (response.status) {
                     HttpStatusCode.OK -> DivaResult.success(Unit)
                     else -> {
-                        val body: ApiResponse<Nothing> = response.body()
+                        val body: ApiResponse<Unit> = response.body()
                         DivaResult.failure(
                             DivaError(
                                 cause = ErrorCause.Network.Error(
@@ -193,7 +193,7 @@ class AuthNetworkClientImpl(
                             )
                     }
                     else -> {
-                        val body: ApiResponse<Nothing> = response.body()
+                        val body: ApiResponse<Unit> = response.body()
                         DivaResult.failure(
                             DivaError(
                                 cause = ErrorCause.Network.Error(
@@ -225,7 +225,7 @@ class AuthNetworkClientImpl(
                 when (response.status) {
                     HttpStatusCode.OK -> DivaResult.success(Unit)
                     else -> {
-                        val body: ApiResponse<Nothing> = response.body()
+                        val body: ApiResponse<Unit> = response.body()
                         DivaResult.failure(
                             DivaError(
                                 cause = ErrorCause.Network.Error(
