@@ -1,29 +1,27 @@
 package com.diva.database.user.permissions
 
 import com.diva.models.user.permissions.UserPermission
-import io.github.juevigrace.diva.core.DivaResult
-import io.github.juevigrace.diva.core.errors.DivaError
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface UserPermissionsStorage {
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun insert(perm: UserPermission, userId: Uuid): DivaResult<Unit, DivaError>
+    suspend fun insert(perm: UserPermission, userId: Uuid): Result<Unit>
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun insertAll(map: Map<Uuid, List<UserPermission>>): DivaResult<Unit, DivaError>
+    suspend fun insertAll(map: Map<Uuid, List<UserPermission>>): Result<Unit>
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun update(perm: UserPermission, userId: Uuid): DivaResult<Unit, DivaError>
+    suspend fun update(perm: UserPermission, userId: Uuid): Result<Unit>
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun updateAll(map: Map<Uuid, List<UserPermission>>): DivaResult<Unit, DivaError>
+    suspend fun updateAll(map: Map<Uuid, List<UserPermission>>): Result<Unit>
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun delete(permId: Uuid, userId: Uuid): DivaResult<Unit, DivaError>
+    suspend fun delete(permId: Uuid, userId: Uuid): Result<Unit>
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun deleteByUser(userId: Uuid): DivaResult<Unit, DivaError>
+    suspend fun deleteByUser(userId: Uuid): Result<Unit>
 
-    suspend fun deleteAll(): DivaResult<Unit, DivaError>
+    suspend fun deleteAll(): Result<Unit>
 }

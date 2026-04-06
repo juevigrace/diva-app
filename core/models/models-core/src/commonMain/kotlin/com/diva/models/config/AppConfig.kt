@@ -17,7 +17,7 @@ data class AppConfig(
         "https"
     },
     override val version: String = "1.0",
-    val versionName: String = "$version${if (environment != Environment.PRODUCTION) {
+    override val versionName: String = "$version${if (environment != Environment.PRODUCTION) {
         "-$environment"
     } else {
         ""

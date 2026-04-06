@@ -14,27 +14,34 @@ import com.diva.core.ui.resources.error_validation_parse
 import com.diva.core.ui.resources.error_validation_unexpected_value
 import com.diva.core.ui.resources.error_validation_used
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.errors.DivaError
-import io.github.juevigrace.diva.core.errors.ErrorCause
+import io.github.juevigrace.diva.core.errors.ConstraintException
+import io.github.juevigrace.diva.core.errors.ConstraintViolationException
+import io.github.juevigrace.diva.core.errors.HttpException
+import io.github.juevigrace.diva.core.errors.NetworkConnectionException
+import io.github.juevigrace.diva.core.errors.NetworkTimeoutException
+import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
+import io.github.juevigrace.diva.core.errors.ProcessingException
 import io.github.juevigrace.diva.ui.toast.ToastMessage
 import org.jetbrains.compose.resources.getString
 
-suspend inline fun DivaError.toToast(): ToastMessage {
+suspend inline fun Throwable.toToast(): ToastMessage {
     return ToastMessage(
-        message = when (cause) {
-            is ErrorCause.Database.Duplicated -> getString(Res.string.error_database_duplicated)
-            is ErrorCause.Database.NoRowsAffected -> getString(Res.string.error_database_no_rows_affected)
-            is ErrorCause.Error.Ex -> getString(Res.string.error_unknown)
-            is ErrorCause.Error.NotImplemented -> getString(Res.string.error_not_implemented)
-            is ErrorCause.Network.Error -> getString(Res.string.error_network)
-            is ErrorCause.Network.NoConnection -> getString(Res.string.error_no_connection)
-            is ErrorCause.Network.Timeout -> getString(Res.string.error_timeout)
-            is ErrorCause.Validation.Expired -> getString(Res.string.error_validation_expired)
-            is ErrorCause.Validation.MissingValue -> getString(Res.string.error_validation_missing_value)
-            is ErrorCause.Validation.Parse -> getString(Res.string.error_validation_parse)
-            is ErrorCause.Validation.UnexpectedValue -> getString(Res.string.error_validation_unexpected_value)
-            is ErrorCause.Validation.Used -> getString(Res.string.error_validation_used)
-            is ErrorCause.Actions<*> -> ""
+        message = when (this) {
+            is ConstraintViolationException -> getString(Res.string.error_database_duplicated)
+            is NoRowsAffectedException -> getString(Res.string.error_database_no_rows_affected)
+            is ProcessingException -> getString(Res.string.error_unknown)
+            is HttpException -> getString(Res.string.error_network)
+            is NetworkConnectionException -> getString(Res.string.error_no_connection)
+            is NetworkTimeoutException -> getString(Res.string.error_timeout)
+            is ConstraintException -> when (constraint) {
+                "expired" -> getString(Res.string.error_validation_expired)
+                "missing" -> getString(Res.string.error_validation_missing_value)
+                "parse" -> getString(Res.string.error_validation_parse)
+                "unexpected" -> getString(Res.string.error_validation_unexpected_value)
+                "used" -> getString(Res.string.error_validation_used)
+                else -> getString(Res.string.error_unknown)
+            }
+            else -> getString(Res.string.error_unknown)
         },
         isError = true,
         details = Option.of(message)

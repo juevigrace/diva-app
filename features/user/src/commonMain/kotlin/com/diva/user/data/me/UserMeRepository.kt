@@ -7,22 +7,18 @@ import com.diva.models.api.user.dtos.UpdateEmailDto
 import com.diva.models.api.user.dtos.UpdateUserDto
 import com.diva.models.user.User
 import com.diva.user.api.client.me.UserMeApi
-import io.github.juevigrace.diva.core.DivaResult
-import io.github.juevigrace.diva.core.errors.DivaError
-import io.github.juevigrace.diva.core.errors.ErrorCause
-import io.github.juevigrace.diva.core.flatMapError
+import io.github.juevigrace.diva.core.errors.ProcessingException
 import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.core.map
-import io.github.juevigrace.diva.core.onFailure
-import io.github.juevigrace.diva.core.onSuccess
 import kotlinx.coroutines.flow.Flow
+import kotlin.fold
 import kotlin.uuid.ExperimentalUuidApi
 
 interface UserMeRepository : Repository {
-    fun getMe(): Flow<DivaResult<User, DivaError>>
-    fun updateMe(user: User): Flow<DivaResult<Unit, DivaError>>
-    fun deleteMe(): Flow<DivaResult<Unit, DivaError>>
-    fun updateEmail(email: String): Flow<DivaResult<Unit, DivaError>>
+    fun getMe(): Flow<Result<User>>
+    fun updateMe(user: User): Flow<Result<Unit>>
+    fun deleteMe(): Flow<Result<Unit>>
+    fun updateEmail(email: String): Flow<Result<Unit>>
 }
 
 class UserMeRepositoryImpl(
@@ -32,19 +28,20 @@ class UserMeRepositoryImpl(
 ) : UserMeRepository {
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun getMe(): Flow<DivaResult<User, DivaError>> {
+    override fun getMe(): Flow<Result<User>> {
         return withSession(sessionRepository::getCurrent) { session ->
             storage.getById(session.user.id).fold(
-                onFailure = { err -> emit(DivaResult.failure(err)) },
+                onFailure = { err -> emit(Result.failure(err)) },
                 onSuccess = { option ->
                     option.fold(
                         onNone = {
-                            fetchMe(session.accessToken).onFailure { err ->
-                                emit(DivaResult.failure(err))
-                            }
+                            fetchMe(session.accessToken).fold(
+                                onFailure = { err -> emit(Result.failure(err)) },
+                                onSuccess = { }
+                            )
                         },
                         onSome = { user ->
-                            emit(DivaResult.success(user))
+                            emit(Result.success(user))
                         }
                     )
                 }
@@ -52,29 +49,31 @@ class UserMeRepositoryImpl(
         }
     }
 
-    private suspend fun fetchMe(token: String): DivaResult<Unit, DivaError> {
+    private suspend fun fetchMe(token: String): Result<Unit> {
         return userMeClient.getMe(token).map { res ->
             val user = User.fromResponse(res)
             upsertUser(user)
         }
     }
 
-    private suspend fun upsertUser(user: User): DivaResult<Unit, DivaError> {
+    private suspend fun upsertUser(user: User): Result<Unit> {
         return storage.insert(user)
-            .flatMapError { err ->
-                val cause = err.cause
-                return@flatMapError if (
-                    cause is ErrorCause.Error.Ex &&
-                    cause.ex.message?.contains("SQLITE_CONSTRAINT_UNIQUE") == true
-                ) {
-                    storage.update(user)
-                } else {
-                    DivaResult.failure(err)
+            .fold(
+                onSuccess = { Result.success(Unit) },
+                onFailure = { err ->
+                    if (
+                        err is ProcessingException &&
+                        err.message?.contains("SQLITE_CONSTRAINT_UNIQUE") == true
+                    ) {
+                        storage.update(user)
+                    } else {
+                        Result.failure(err)
+                    }
                 }
-            }
+            )
     }
 
-    override fun updateMe(user: User): Flow<DivaResult<Unit, DivaError>> {
+    override fun updateMe(user: User): Flow<Result<Unit>> {
         return withSession(sessionRepository::getCurrent) { value ->
             val dto = UpdateUserDto(
                 alias = user.alias,
@@ -82,25 +81,28 @@ class UserMeRepositoryImpl(
                 bio = user.bio,
                 avatar = user.avatar
             )
-            userMeClient.updateMe(dto, value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
+            userMeClient.updateMe(dto, value.accessToken).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { emit(Result.success(Unit)) }
+            )
         }
     }
 
-    override fun deleteMe(): Flow<DivaResult<Unit, DivaError>> {
+    override fun deleteMe(): Flow<Result<Unit>> {
         return withSession(sessionRepository::getCurrent) { value ->
-            userMeClient.deleteMe(value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
+            userMeClient.deleteMe(value.accessToken).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { emit(Result.success(Unit)) }
+            )
         }
     }
 
-    override fun updateEmail(email: String): Flow<DivaResult<Unit, DivaError>> {
+    override fun updateEmail(email: String): Flow<Result<Unit>> {
         return withSession(sessionRepository::getCurrent) { value ->
-            userMeClient.updateEmail(UpdateEmailDto(email), value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
+            userMeClient.updateEmail(UpdateEmailDto(email), value.accessToken).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { emit(Result.success(Unit)) }
+            )
         }
     }
 }

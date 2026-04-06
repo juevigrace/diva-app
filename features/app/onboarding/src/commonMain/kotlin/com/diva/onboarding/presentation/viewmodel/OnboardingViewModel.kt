@@ -5,8 +5,6 @@ import com.diva.onboarding.presentation.state.OnboardingState
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.SignInDestination
 import com.diva.user.data.preferences.UserPreferencesRepository
-import io.github.juevigrace.diva.core.fold
-import io.github.juevigrace.diva.core.onFailure
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

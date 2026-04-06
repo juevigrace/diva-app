@@ -3,7 +3,6 @@ package com.diva.app.di.database
 import app.cash.sqldelight.EnumColumnAdapter
 import app.cash.sqldelight.db.SqlDriver
 import com.diva.database.DivaDB
-import io.github.juevigrace.diva.core.getOrThrow
 import io.github.juevigrace.diva.database.DivaDatabase
 import io.github.juevigrace.diva.database.driver.DriverProvider
 import io.github.juevigrace.diva.database.driver.Schema

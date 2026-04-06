@@ -1,9 +1,6 @@
 package com.diva.models
 
 import com.diva.models.auth.Session
-import io.github.juevigrace.diva.core.DivaResult
-import io.github.juevigrace.diva.core.errors.DivaError
-import io.github.juevigrace.diva.core.fold
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -21,13 +18,13 @@ interface Repository {
         get() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun<T> withSession(
-        sessionCall: suspend () -> Flow<DivaResult<Session, DivaError>>,
-        onFound: suspend FlowCollector<DivaResult<T, DivaError>>.(session: Session) -> Unit
-    ): Flow<DivaResult<T, DivaError>> {
+        sessionCall: suspend () -> Flow<Result<Session>>,
+        onFound: suspend FlowCollector<Result<T>>.(session: Session) -> Unit
+    ): Flow<Result<T>> {
         return flow {
             sessionCall().collect { result ->
                 result.fold(
-                    onFailure = { err -> emit(DivaResult.failure(err)) },
+                    onFailure = { err -> emit(Result.failure(err)) },
                     onSuccess = { session ->
                         onFound(session)
                     }

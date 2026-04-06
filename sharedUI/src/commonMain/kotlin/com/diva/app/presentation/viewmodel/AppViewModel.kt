@@ -7,7 +7,7 @@ import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.HomeDestination
 import com.diva.ui.navigation.OnboardingDestination
 import com.diva.ui.navigation.SignInDestination
-import io.github.juevigrace.diva.core.errors.ErrorCause
+import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.Toaster
@@ -60,7 +60,7 @@ class AppViewModel(
             result.fold(
                 onFailure = { err ->
                     val cause = err.cause
-                    if (cause is ErrorCause.Validation.MissingValue && cause.field == "session") {
+                    if (cause is ConstraintException && cause.field == "session") {
                         _state.update { state ->
                             state.copy(
                                 sessionLoading = false,
@@ -87,7 +87,7 @@ class AppViewModel(
         repository.getPreferences().collect { res ->
             res.fold(
                 onFailure = { err ->
-                    if (err.cause is ErrorCause.Validation.MissingValue) {
+                    if (err.cause is ConstraintException) {
                         println("Creating local preferences: $err")
                         handleNoLocalPreferences()
                     } else {

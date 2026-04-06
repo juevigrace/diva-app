@@ -8,22 +8,18 @@ import com.diva.models.actions.safeActionsValueOf
 import com.diva.models.api.user.action.event.UserActionsEvents
 import com.diva.models.user.actions.UserAction
 import com.diva.user.api.client.actions.UserActionsApi
-import io.github.juevigrace.diva.core.DivaResult
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.errors.DivaError
-import io.github.juevigrace.diva.core.errors.ErrorCause
+import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.fold
-import io.github.juevigrace.diva.core.onFailure
-import io.github.juevigrace.diva.core.onSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface UserActionsRepository : Repository {
-    fun fetchActions(): Flow<DivaResult<Unit, DivaError>>
-    fun getActions(): Flow<DivaResult<Map<Actions, UserAction>, DivaError>>
-    fun getAction(action: Actions): Flow<DivaResult<Actions, DivaError>>
-    fun syncActions(): Flow<DivaResult<Unit, DivaError>>
+    fun fetchActions(): Flow<Result<Unit>>
+    fun getActions(): Flow<Result<Map<Actions, UserAction>>>
+    fun getAction(action: Actions): Flow<Result<Actions>>
+    fun syncActions(): Flow<Result<Unit>>
 }
 
 class UserActionsRepositoryImpl(
@@ -32,10 +28,10 @@ class UserActionsRepositoryImpl(
     private val sessionRepository: SessionRepository,
 ) : UserActionsRepository {
     @OptIn(ExperimentalUuidApi::class)
-    override fun fetchActions(): Flow<DivaResult<Unit, DivaError>> {
+    override fun fetchActions(): Flow<Result<Unit>> {
         return withSession(sessionRepository::getCurrent) { session ->
             api.getActions(session.accessToken).fold(
-                onFailure = { err -> emit(DivaResult.failure(err)) },
+                onFailure = { err -> emit(Result.failure(err)) },
                 onSuccess = { res ->
                     val actions = res.mapNotNull { actionRes ->
                         val action = safeActionsValueOf(actionRes.actionName)
@@ -53,8 +49,8 @@ class UserActionsRepositoryImpl(
                         uAction
                     }
                     storage.insertAll(mapOf(session.user.id to actions)).fold(
-                        onFailure = { err -> emit(DivaResult.failure(err)) },
-                        onSuccess = { emit(DivaResult.success(Unit)) }
+                        onFailure = { err -> emit(Result.failure(err)) },
+                        onSuccess = { emit(Result.success(Unit)) }
                     )
                 }
             )
@@ -62,19 +58,22 @@ class UserActionsRepositoryImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun getActions(): Flow<DivaResult<Map<Actions, UserAction>, DivaError>> {
+    override fun getActions(): Flow<Result<Map<Actions, UserAction>>> {
         return withSession(sessionRepository::getCurrent) { session ->
             println("Getting actions for $session")
             storage.getAllByUserFlow(session.user.id).collect { result ->
                 result.fold(
-                    onFailure = { err -> emit(DivaResult.failure(err)) },
+                    onFailure = { err -> emit(Result.failure(err)) },
                     onSuccess = { actions ->
                         if (actions.isEmpty()) {
                             fetchActions().collect { res ->
-                                res.onFailure { err -> emit(DivaResult.failure(err)) }
+                                res.fold(
+                                    onFailure = { err -> emit(Result.failure(err)) },
+                                    onSuccess = { }
+                                )
                             }
                         }
-                        emit(DivaResult.success(actions.associateBy { it.action }))
+                        emit(Result.success(actions.associateBy { it.action }))
                     }
                 )
             }
@@ -82,38 +81,38 @@ class UserActionsRepositoryImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun getAction(action: Actions): Flow<DivaResult<Actions, DivaError>> {
+    override fun getAction(action: Actions): Flow<Result<Actions>> {
         return withSession(sessionRepository::getCurrent) { session ->
-            storage.getOneByAction(action, session.user.id)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { option ->
+            storage.getOneByAction(action, session.user.id).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { option ->
                     option.fold(
                         onNone = {
                             emit(
-                                DivaResult.failure(
-                                    DivaError(
-                                        ErrorCause.Validation.MissingValue(
-                                            "action",
-                                            details = Option.Some("$action not found")
-                                        )
+                                Result.failure(
+                                    ConstraintException(
+                                        field = "action",
+                                        constraint = "missing",
+                                        value = "$action not found"
                                     )
                                 )
                             )
                         },
                         onSome = { action ->
-                            emit(DivaResult.success(action.action))
+                            emit(Result.success(action.action))
                         }
                     )
                 }
+            )
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun syncActions(): Flow<DivaResult<Unit, DivaError>> {
+    override fun syncActions(): Flow<Result<Unit>> {
         return withSession(sessionRepository::getCurrent) { session ->
             api.streamActions(session.accessToken).collect { result ->
                 result.fold(
-                    onFailure = { err -> emit(DivaResult.failure(err)) },
+                    onFailure = { err -> emit(Result.failure(err)) },
                     onSuccess = { events ->
                         when (events) {
                             is UserActionsEvents.Actions -> {
@@ -135,7 +134,7 @@ class UserActionsRepositoryImpl(
                                 storage.insertAll(mapOf(session.user.id to actions))
                             }
                             UserActionsEvents.End -> {
-                                emit(DivaResult.success(Unit))
+                                emit(Result.success(Unit))
                             }
                         }
                     }

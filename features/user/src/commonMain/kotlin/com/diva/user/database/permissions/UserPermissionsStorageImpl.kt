@@ -3,11 +3,9 @@ package com.diva.user.database.permissions
 import com.diva.database.DivaDB
 import com.diva.database.user.permissions.UserPermissionsStorage
 import com.diva.models.user.permissions.UserPermission
-import io.github.juevigrace.diva.core.DivaResult
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.database.DatabaseAction
-import io.github.juevigrace.diva.core.errors.DivaError
-import io.github.juevigrace.diva.core.errors.ErrorCause
+import io.github.juevigrace.diva.core.database.DatabaseOperation
+import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
 import io.github.juevigrace.diva.core.getOrElse
 import io.github.juevigrace.diva.database.DivaDatabase
 import kotlin.time.Clock
@@ -24,7 +22,7 @@ class UserPermissionsStorageImpl(
     override suspend fun insert(
         perm: UserPermission,
         userId: Uuid
-    ): DivaResult<Unit, DivaError> {
+    ): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userPermissionsQueries.insert(
@@ -39,38 +37,36 @@ class UserPermissionsStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use DivaResult.failure(
-                    DivaError(
-                        ErrorCause.Database.NoRowsAffected(
-                            action = DatabaseAction.INSERT,
-                            table = Option.Some("diva_user_permissions"),
-                            details = Option.Some("Failed to insert")
-                        )
+                return@use Result.failure(
+                    NoRowsAffectedException(
+                        operation = Option.of(DatabaseOperation.INSERT),
+                        table = Option.Some("diva_user_permissions"),
+                        details = Option.Some("Failed to insert")
                     )
                 )
             }
-            DivaResult.success(Unit)
+            Result.success(Unit)
         }
     }
 
     @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
-    override suspend fun insertAll(map: Map<Uuid, List<UserPermission>>): DivaResult<Unit, DivaError> {
+    override suspend fun insertAll(map: Map<Uuid, List<UserPermission>>): Result<Unit> {
         for ((key, value) in map) {
             for (perm in value) {
                 val result = insert(perm, key)
-                if (result is DivaResult.Failure) {
+                if (result.isFailure) {
                     return result
                 }
             }
         }
-        return DivaResult.success(Unit)
+        return Result.success(Unit)
     }
 
     @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
     override suspend fun update(
         perm: UserPermission,
         userId: Uuid
-    ): DivaResult<Unit, DivaError> {
+    ): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userPermissionsQueries.update(
@@ -83,96 +79,88 @@ class UserPermissionsStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use DivaResult.failure(
-                    DivaError(
-                        ErrorCause.Database.NoRowsAffected(
-                            action = DatabaseAction.UPDATE,
-                            table = Option.Some("diva_user_permissions"),
-                            details = Option.Some("Failed to update")
-                        )
+                return@use Result.failure(
+                    NoRowsAffectedException(
+                        operation = Option.of(DatabaseOperation.UPDATE),
+                        table = Option.Some("diva_user_permissions"),
+                        details = Option.Some("Failed to update")
                     )
                 )
             }
-            DivaResult.success(Unit)
+            Result.success(Unit)
         }
     }
 
     @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
-    override suspend fun updateAll(map: Map<Uuid, List<UserPermission>>): DivaResult<Unit, DivaError> {
+    override suspend fun updateAll(map: Map<Uuid, List<UserPermission>>): Result<Unit> {
         for ((key, value) in map) {
             for (perm in value) {
                 val result = update(perm, key)
-                if (result is DivaResult.Failure) {
+                if (result.isFailure) {
                     return result
                 }
             }
         }
-        return DivaResult.success(Unit)
+        return Result.success(Unit)
     }
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun delete(
         permId: Uuid,
         userId: Uuid
-    ): DivaResult<Unit, DivaError> {
+    ): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userPermissionsQueries.deleteById(permId.toString(), userId.toString())
             }
             if (rows.toInt() == 0) {
-                return@use DivaResult.failure(
-                    DivaError(
-                        ErrorCause.Database.NoRowsAffected(
-                            action = DatabaseAction.DELETE,
-                            table = Option.Some("diva_user_permissions"),
-                            details = Option.Some("Failed to delete")
-                        )
+                return@use Result.failure(
+                    NoRowsAffectedException(
+                        operation = Option.of(DatabaseOperation.DELETE),
+                        table = Option.Some("diva_user_permissions"),
+                        details = Option.Some("Failed to delete")
                     )
                 )
             }
-            DivaResult.success(Unit)
+            Result.success(Unit)
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun deleteByUser(userId: Uuid): DivaResult<Unit, DivaError> {
+    override suspend fun deleteByUser(userId: Uuid): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userPermissionsQueries.deleteByUser(userId.toString())
             }
             if (rows.toInt() == 0) {
-                return@use DivaResult.failure(
-                    DivaError(
-                        ErrorCause.Database.NoRowsAffected(
-                            action = DatabaseAction.DELETE,
-                            table = Option.Some("diva_user_permissions"),
-                            details = Option.Some("Failed to delete")
-                        )
+                return@use Result.failure(
+                    NoRowsAffectedException(
+                        operation = Option.of(DatabaseOperation.DELETE),
+                        table = Option.Some("diva_user_permissions"),
+                        details = Option.Some("Failed to delete")
                     )
                 )
             }
-            DivaResult.success(Unit)
+            Result.success(Unit)
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun deleteAll(): DivaResult<Unit, DivaError> {
+    override suspend fun deleteAll(): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userPermissionsQueries.deleteAll()
             }
             if (rows.toInt() == 0) {
-                return@use DivaResult.failure(
-                    DivaError(
-                        ErrorCause.Database.NoRowsAffected(
-                            action = DatabaseAction.DELETE,
-                            table = Option.Some("diva_user_permissions"),
-                            details = Option.Some("Failed to delete")
-                        )
+                return@use Result.failure(
+                    NoRowsAffectedException(
+                        operation = Option.of(DatabaseOperation.DELETE),
+                        table = Option.Some("diva_user_permissions"),
+                        details = Option.Some("Failed to delete")
                     )
                 )
             }
-            DivaResult.success(Unit)
+            Result.success(Unit)
         }
     }
 }

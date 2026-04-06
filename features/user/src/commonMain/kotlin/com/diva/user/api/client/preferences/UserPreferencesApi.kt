@@ -2,18 +2,12 @@ package com.diva.user.api.client.preferences
 
 import com.diva.models.api.ApiResponse
 import com.diva.models.api.user.preferences.dtos.UserPreferencesDto
-import io.github.juevigrace.diva.core.DivaResult
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.errors.DivaError
-import io.github.juevigrace.diva.core.errors.ErrorCause
-import io.github.juevigrace.diva.core.errors.toDivaError
-import io.github.juevigrace.diva.core.flatMap
-import io.github.juevigrace.diva.core.network.HttpRequestMethod
+import io.github.juevigrace.diva.core.errors.HttpException
 import io.github.juevigrace.diva.core.tryResult
 import io.github.juevigrace.diva.network.client.DivaClient
 import io.github.juevigrace.diva.network.client.post
 import io.github.juevigrace.diva.network.client.put
-import io.github.juevigrace.diva.network.client.toHttpStatusCodes
 import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
 
@@ -21,11 +15,11 @@ interface UserPreferencesApi {
     suspend fun createPreferences(
         dto: UserPreferencesDto,
         token: String
-    ): DivaResult<Unit, DivaError>
+    ): Result<Unit>
     suspend fun updatePreferences(
         dto: UserPreferencesDto,
         token: String
-    ): DivaResult<Unit, DivaError>
+    ): Result<Unit>
 }
 
 class UserPreferencesApiImpl(
@@ -34,64 +28,64 @@ class UserPreferencesApiImpl(
     override suspend fun createPreferences(
         dto: UserPreferencesDto,
         token: String
-    ): DivaResult<Unit, DivaError> {
+    ): Result<Unit> {
         return tryResult(
-            onError = { e -> e.toDivaError() }
+            onError = { e -> e }
         ) {
             client.post(
                 path = "/api/user/me/preferences",
                 body = dto,
                 headers = mapOf("Authorization" to "Bearer $token")
-            ).flatMap { response ->
-                when (response.status) {
-                    HttpStatusCode.Accepted -> DivaResult.success(Unit)
-                    else -> {
-                        val body: ApiResponse<Nothing> = response.body()
-                        DivaResult.failure(
-                            DivaError(
-                                cause = ErrorCause.Network.Error(
-                                    method = HttpRequestMethod.POST,
-                                    url = "/api/user/me/preferences",
-                                    status = response.status.toHttpStatusCodes(),
-                                    details = Option.Some(body.message)
+            ).fold(
+                onSuccess = { response ->
+                    when (response.status) {
+                        HttpStatusCode.Accepted -> Result.success(Unit)
+                        else -> {
+                            val body: ApiResponse<Nothing> = response.body()
+                            Result.failure(
+                                HttpException(
+                                    statusCode = Option.of(response.status.value),
+                                    url = Option.of("/api/user/me/preferences"),
+                                    details = Option.of(body.message)
                                 )
                             )
-                        )
+                        }
                     }
-                }
-            }
+                },
+                onFailure = { Result.failure(it) }
+            )
         }
     }
 
     override suspend fun updatePreferences(
         dto: UserPreferencesDto,
         token: String
-    ): DivaResult<Unit, DivaError> {
+    ): Result<Unit> {
         return tryResult(
-            onError = { e -> e.toDivaError() }
+            onError = { e -> e }
         ) {
             client.put(
                 path = "/api/user/me/preferences",
                 body = dto,
                 headers = mapOf("Authorization" to "Bearer $token")
-            ).flatMap { response ->
-                when (response.status) {
-                    HttpStatusCode.Accepted -> DivaResult.success(Unit)
-                    else -> {
-                        val body: ApiResponse<Nothing> = response.body()
-                        DivaResult.failure(
-                            DivaError(
-                                cause = ErrorCause.Network.Error(
-                                    method = HttpRequestMethod.PUT,
-                                    url = "/api/user/me/preferences",
-                                    status = response.status.toHttpStatusCodes(),
-                                    details = Option.Some(body.message)
+            ).fold(
+                onSuccess = { response ->
+                    when (response.status) {
+                        HttpStatusCode.Accepted -> Result.success(Unit)
+                        else -> {
+                            val body: ApiResponse<Nothing> = response.body()
+                            Result.failure(
+                                HttpException(
+                                    statusCode = Option.of(response.status.value),
+                                    url = Option.of("/api/user/me/preferences"),
+                                    details = Option.of(body.message)
                                 )
                             )
-                        )
+                        }
                     }
-                }
-            }
+                },
+                onFailure = { Result.failure(it) }
+            )
         }
     }
 }

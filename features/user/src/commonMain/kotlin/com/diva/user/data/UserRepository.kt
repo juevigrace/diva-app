@@ -8,11 +8,7 @@ import com.diva.models.auth.SignUpForm
 import com.diva.models.user.User
 import com.diva.user.api.client.UserApi
 import com.diva.user.api.client.me.UserMeApi
-import io.github.juevigrace.diva.core.DivaResult
-import io.github.juevigrace.diva.core.errors.DivaError
 import io.github.juevigrace.diva.core.fold
-import io.github.juevigrace.diva.core.onFailure
-import io.github.juevigrace.diva.core.onSuccess
 import io.github.juevigrace.diva.core.pagination.Pagination
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -23,22 +19,22 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface UserRepository : Repository {
-    fun getUsers(page: Int, pageSize: Int): Flow<DivaResult<Pagination<User>, DivaError>>
+    fun getUsers(page: Int, pageSize: Int): Flow<Result<Pagination<User>>>
 
     @OptIn(ExperimentalUuidApi::class)
-    fun getUserById(id: Uuid): Flow<DivaResult<User, DivaError>>
+    fun getUserById(id: Uuid): Flow<Result<User>>
 
-    fun checkEmail(email: String): Flow<DivaResult<Boolean, DivaError>>
+    fun checkEmail(email: String): Flow<Result<Boolean>>
 
-    fun checkUsername(username: String): Flow<DivaResult<Boolean, DivaError>>
+    fun checkUsername(username: String): Flow<Result<Boolean>>
 
-    fun createUser(form: SignUpForm): Flow<DivaResult<String, DivaError>>
-
-    @OptIn(ExperimentalUuidApi::class)
-    fun updateUser(id: Uuid, user: User): Flow<DivaResult<Unit, DivaError>>
+    fun createUser(form: SignUpForm): Flow<Result<String>>
 
     @OptIn(ExperimentalUuidApi::class)
-    fun deleteUser(id: Uuid): Flow<DivaResult<Unit, DivaError>>
+    fun updateUser(id: Uuid, user: User): Flow<Result<Unit>>
+
+    @OptIn(ExperimentalUuidApi::class)
+    fun deleteUser(id: Uuid): Flow<Result<Unit>>
 }
 
 class UserRepositoryImpl(
@@ -50,17 +46,17 @@ class UserRepositoryImpl(
     override fun getUsers(
         page: Int,
         pageSize: Int,
-    ): Flow<DivaResult<Pagination<User>, DivaError>> {
+    ): Flow<Result<Pagination<User>>> {
         return flow {
-            userClient.getAll(page, pageSize)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { res ->
+            userClient.getAll(page, pageSize).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { res ->
                     res.items.forEach { item ->
                         userStorage.insert(User.fromResponse(item))
                     }
-                    userStorage.getAll(page, pageSize)
-                        .onFailure { err -> emit(DivaResult.failure(err)) }
-                        .onSuccess { list ->
+                    userStorage.getAll(page, pageSize).fold(
+                        onFailure = { err -> emit(Result.failure(err)) },
+                        onSuccess = { list ->
                             val pagination: Pagination<User> = Pagination(
                                 items = list,
                                 totalItems = res.pagination.totalItems,
@@ -68,63 +64,72 @@ class UserRepositoryImpl(
                                 currentPage = res.pagination.page,
                                 pageSize = res.pagination.limit
                             )
-                            emit(DivaResult.success(pagination))
+                            emit(Result.success(pagination))
                         }
+                    )
                 }
+            )
         }.flowOn(Dispatchers.IO)
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun getUserById(id: Uuid): Flow<DivaResult<User, DivaError>> {
+    override fun getUserById(id: Uuid): Flow<Result<User>> {
         return flow {
             userStorage.getByIdFlow(id).collect { result ->
-                result
-                    .onFailure { err -> emit(DivaResult.failure(err)) }
-                    .onSuccess { option ->
+                result.fold(
+                    onFailure = { err -> emit(Result.failure(err)) },
+                    onSuccess = { option ->
                         option.fold(
                             onNone = {
-                                userClient.getById(id.toString())
-                                    .onFailure { err -> emit(DivaResult.failure(err)) }
-                                    .onSuccess { res ->
-                                        userStorage.insert(User.fromResponse(res))
-                                            .onFailure { err -> emit(DivaResult.failure(err)) }
+                                userClient.getById(id.toString()).fold(
+                                    onFailure = { err -> emit(Result.failure(err)) },
+                                    onSuccess = { res ->
+                                        userStorage.insert(User.fromResponse(res)).fold(
+                                            onFailure = { err -> emit(Result.failure(err)) },
+                                            onSuccess = { }
+                                        )
                                     }
+                                )
                             },
                             onSome = { user ->
-                                emit(DivaResult.success(user))
+                                emit(Result.success(user))
                             }
                         )
                     }
+                )
             }
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun checkEmail(email: String): Flow<DivaResult<Boolean, DivaError>> {
+    override fun checkEmail(email: String): Flow<Result<Boolean>> {
         return flow {
-            userClient.checkEmail(email)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { res -> emit(DivaResult.success(res)) }
+            userClient.checkEmail(email).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { res -> emit(Result.success(res)) }
+            )
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun checkUsername(username: String): Flow<DivaResult<Boolean, DivaError>> {
+    override fun checkUsername(username: String): Flow<Result<Boolean>> {
         return flow {
-            userClient.checkUsername(username)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { res -> emit(DivaResult.success(res)) }
+            userClient.checkUsername(username).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { res -> emit(Result.success(res)) }
+            )
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun createUser(form: SignUpForm): Flow<DivaResult<String, DivaError>> {
+    override fun createUser(form: SignUpForm): Flow<Result<String>> {
         return withSession(sessionRepository::getCurrent) { value ->
-            userClient.create(form.toSignUpDto().user, value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { res -> emit(DivaResult.success(res)) }
+            userClient.create(form.toSignUpDto().user, value.accessToken).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { res -> emit(Result.success(res)) }
+            )
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun updateUser(id: Uuid, user: User): Flow<DivaResult<Unit, DivaError>> {
+    override fun updateUser(id: Uuid, user: User): Flow<Result<Unit>> {
         return withSession(sessionRepository::getCurrent) { value ->
             userClient.update(
                 id.toString(),
@@ -135,18 +140,20 @@ class UserRepositoryImpl(
                     avatar = user.avatar
                 ),
                 value.accessToken
+            ).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { emit(Result.success(Unit)) }
             )
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun deleteUser(id: Uuid): Flow<DivaResult<Unit, DivaError>> {
+    override fun deleteUser(id: Uuid): Flow<Result<Unit>> {
         return withSession(sessionRepository::getCurrent) { value ->
-            userClient.delete(id.toString(), value.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-                .onSuccess { emit(DivaResult.success(Unit)) }
+            userClient.delete(id.toString(), value.accessToken).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { emit(Result.success(Unit)) }
+            )
         }
     }
 }

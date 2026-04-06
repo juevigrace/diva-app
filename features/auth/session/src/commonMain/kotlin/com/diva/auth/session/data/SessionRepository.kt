@@ -4,13 +4,10 @@ import com.diva.auth.data.api.client.AuthApi
 import com.diva.database.session.SessionStorage
 import com.diva.models.Repository
 import com.diva.models.auth.Session
-import io.github.juevigrace.diva.core.DivaResult
-import io.github.juevigrace.diva.core.errors.DivaError
-import io.github.juevigrace.diva.core.errors.ErrorCause
+import io.github.juevigrace.diva.core.errors.ConstraintException
+import io.github.juevigrace.diva.core.errors.HttpException
 import io.github.juevigrace.diva.core.fold
-import io.github.juevigrace.diva.core.network.HttpStatusCodes
-import io.github.juevigrace.diva.core.onFailure
-import io.github.juevigrace.diva.core.onSuccess
+import io.github.juevigrace.diva.core.getOrElse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -19,64 +16,64 @@ import kotlinx.coroutines.flow.flowOn
 import kotlin.uuid.ExperimentalUuidApi
 
 interface SessionRepository : Repository {
-    fun getCurrent(): Flow<DivaResult<Session, DivaError>>
-    fun getCurrentFlow(): Flow<DivaResult<Session, DivaError>>
-    fun ping(): Flow<DivaResult<Session, DivaError>>
-    fun logout(): Flow<DivaResult<Unit, DivaError>>
-    fun refresh(): Flow<DivaResult<Unit, DivaError>>
-    fun newSession(session: Session): Flow<DivaResult<Unit, DivaError>>
+    fun getCurrent(): Flow<Result<Session>>
+    fun getCurrentFlow(): Flow<Result<Session>>
+    fun ping(): Flow<Result<Session>>
+    fun logout(): Flow<Result<Unit>>
+    fun refresh(): Flow<Result<Unit>>
+    fun newSession(session: Session): Flow<Result<Unit>>
 }
 
 class SessionRepositoryImpl(
     private val storage: SessionStorage,
     private val api: AuthApi,
 ) : SessionRepository {
-    override fun getCurrent(): Flow<DivaResult<Session, DivaError>> {
+    override fun getCurrent(): Flow<Result<Session>> {
         return flow {
             storage.getCurrentSession().fold(
-                onFailure = { err -> emit(DivaResult.failure(err)) },
+                onFailure = { err -> emit(Result.failure(err)) },
                 onSuccess = { option ->
                     option.fold(
                         onNone = {
                             emit(
-                                DivaResult.failure(
-                                    DivaError(
-                                        cause = ErrorCause.Validation.MissingValue(
-                                            field = "session",
-                                        )
+                                Result.failure(
+                                    ConstraintException(
+                                        field = "session",
+                                        constraint = "missing",
+                                        value = "no session found"
                                     )
                                 )
                             )
                         },
-                        onSome = { value -> emit(DivaResult.success(value)) }
+                        onSome = { value -> emit(Result.success(value)) }
                     )
                 }
             )
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun getCurrentFlow(): Flow<DivaResult<Session, DivaError>> {
+    override fun getCurrentFlow(): Flow<Result<Session>> {
         return flow {
             storage.getCurrentSessionFlow()
                 .collect { result ->
                     result.fold(
                         onFailure = { err ->
-                            emit(DivaResult.failure(err))
+                            emit(Result.failure(err))
                         },
                         onSuccess = { option ->
                             option.fold(
                                 onNone = {
                                     emit(
-                                        DivaResult.failure(
-                                            DivaError(
-                                                cause = ErrorCause.Validation.MissingValue(
-                                                    field = "session",
-                                                )
+                                        Result.failure(
+                                            ConstraintException(
+                                                field = "session",
+                                                constraint = "missing",
+                                                value = "no session found"
                                             )
                                         )
                                     )
                                 },
-                                onSome = { value -> emit(DivaResult.success(value)) }
+                                onSome = { value -> emit(Result.success(value)) }
                             )
                         }
                     )
@@ -84,57 +81,61 @@ class SessionRepositoryImpl(
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun ping(): Flow<DivaResult<Session, DivaError>> {
+    override fun ping(): Flow<Result<Session>> {
         return withSession(::getCurrent) { session ->
             api.ping(session.accessToken).fold(
                 onFailure = { err ->
-                    (err.cause as? ErrorCause.Network.Error)?.let { nErr ->
-                        if (nErr.status is HttpStatusCodes.Unauthorized) {
+                    (err.cause as? HttpException)?.let { nErr ->
+                        if (nErr.statusCode.getOrElse { null } == 401) {
                             refresh().collect { res ->
                                 res.fold(
-                                    onFailure = { err -> emit(DivaResult.failure(err)) },
+                                    onFailure = { err -> emit(Result.failure(err)) },
                                     onSuccess = { ping().collect { result -> emit(result) } }
                                 )
                             }
                         } else {
                             null
                         }
-                    } ?: emit(DivaResult.failure(err))
+                    } ?: emit(Result.failure(err))
                 },
                 onSuccess = {
-                    emit(DivaResult.success(session))
+                    emit(Result.success(session))
                 }
             )
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun logout(): Flow<DivaResult<Unit, DivaError>> {
+    override fun logout(): Flow<Result<Unit>> {
         return withSession(::getCurrent) { session ->
-            api.signOut(session.accessToken)
-                .onFailure { err -> emit(DivaResult.failure(err)) }
-
+            api.signOut(session.accessToken).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { }
+            )
             storage.delete(session.id).fold(
-                onFailure = { err -> emit(DivaResult.failure(err)) },
-                onSuccess = { emit(DivaResult.success(Unit)) }
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { emit(Result.success(Unit)) }
             )
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun refresh(): Flow<DivaResult<Unit, DivaError>> {
+    override fun refresh(): Flow<Result<Unit>> {
         return withSession(::getCurrent) { session ->
             api.refresh(session.data.toSessionDataDto(), session.refreshToken).fold(
                 onFailure = { err ->
-                    storage.delete(session.id).onFailure { err ->
-                        return@withSession emit(DivaResult.failure(err))
-                    }
-                    emit(DivaResult.failure(err))
+                    storage.delete(session.id).fold(
+                        onFailure = { deleteErr ->
+                            return@withSession emit(Result.failure(deleteErr))
+                        },
+                        onSuccess = { }
+                    )
+                    emit(Result.failure(err))
                 },
                 onSuccess = { res ->
                     storage.update(Session.fromResponse(res)).fold(
-                        onFailure = { err -> emit(DivaResult.failure(err)) },
-                        onSuccess = { emit(DivaResult.success(Unit)) }
+                        onFailure = { err -> emit(Result.failure(err)) },
+                        onSuccess = { emit(Result.success(Unit)) }
                     )
                 }
             )
@@ -142,15 +143,15 @@ class SessionRepositoryImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun newSession(session: Session): Flow<DivaResult<Unit, DivaError>> {
+    override fun newSession(session: Session): Flow<Result<Unit>> {
         return flow {
             storage.insert(session).fold(
-                onFailure = { err -> emit(DivaResult.failure(err)) },
+                onFailure = { err -> emit(Result.failure(err)) },
                 onSuccess = {
                     storage.updateActive(session.id).fold(
-                        onFailure = { err -> emit(DivaResult.failure(err)) },
+                        onFailure = { err -> emit(Result.failure(err)) },
                         onSuccess = {
-                            emit(DivaResult.success(Unit))
+                            emit(Result.success(Unit))
                         }
                     )
                 }

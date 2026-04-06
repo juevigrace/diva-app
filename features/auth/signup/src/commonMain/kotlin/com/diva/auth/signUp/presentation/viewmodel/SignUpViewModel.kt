@@ -13,8 +13,6 @@ import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.HomeDestination
 import com.diva.user.data.UserRepository
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.fold
-import io.github.juevigrace.diva.core.onSuccess
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
