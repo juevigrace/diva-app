@@ -54,30 +54,29 @@ class SessionRepositoryImpl(
 
     override fun getCurrentFlow(): Flow<Result<Session>> {
         return flow {
-            storage.getCurrentSessionFlow()
-                .collect { result ->
-                    result.fold(
-                        onFailure = { err ->
-                            emit(Result.failure(err))
-                        },
-                        onSuccess = { option ->
-                            option.fold(
-                                onNone = {
-                                    emit(
-                                        Result.failure(
-                                            ConstraintException(
-                                                field = "session",
-                                                constraint = "missing",
-                                                value = "no session found"
-                                            )
+            storage.getCurrentSessionFlow().collect { result ->
+                result.fold(
+                    onFailure = { err ->
+                        emit(Result.failure(err))
+                    },
+                    onSuccess = { option ->
+                        option.fold(
+                            onNone = {
+                                emit(
+                                    Result.failure(
+                                        ConstraintException(
+                                            field = "session",
+                                            constraint = "missing",
+                                            value = "no session found"
                                         )
                                     )
-                                },
-                                onSome = { value -> emit(Result.success(value)) }
-                            )
-                        }
-                    )
-                }
+                                )
+                            },
+                            onSome = { value -> emit(Result.success(value)) }
+                        )
+                    }
+                )
+            }
         }.flowOn(Dispatchers.IO)
     }
 
@@ -85,18 +84,16 @@ class SessionRepositoryImpl(
         return withSession(::getCurrent) { session ->
             api.ping(session.accessToken).fold(
                 onFailure = { err ->
-                    (err.cause as? HttpException)?.let { nErr ->
-                        if (nErr.statusCode.getOrElse { null } == 401) {
-                            refresh().collect { res ->
-                                res.fold(
-                                    onFailure = { err -> emit(Result.failure(err)) },
-                                    onSuccess = { ping().collect { result -> emit(result) } }
-                                )
-                            }
-                        } else {
-                            null
+                    if (err is HttpException && err.statusCode.getOrElse { 500 } == 401) {
+                        return@fold refresh().collect { res ->
+                            res.fold(
+                                onFailure = { err -> emit(Result.failure(err)) },
+                                onSuccess = { return@collect }
+                            )
                         }
-                    } ?: emit(Result.failure(err))
+                    }
+
+                    emit(Result.failure(err))
                 },
                 onSuccess = {
                     emit(Result.success(session))
@@ -124,12 +121,21 @@ class SessionRepositoryImpl(
         return withSession(::getCurrent) { session ->
             api.refresh(session.data.toSessionDataDto(), session.refreshToken).fold(
                 onFailure = { err ->
-                    storage.delete(session.id).fold(
-                        onFailure = { deleteErr ->
-                            return@withSession emit(Result.failure(deleteErr))
-                        },
-                        onSuccess = { }
-                    )
+                    if (err is HttpException && err.statusCode.getOrElse { 500 } == 401) {
+                        storage.delete(session.id)
+                            .onFailure { deleteErr -> emit(Result.failure(deleteErr)) }
+
+                        return@withSession emit(
+                            Result.failure(
+                                ConstraintException(
+                                    field = "session",
+                                    constraint = "expired",
+                                    value = "no session found"
+                                )
+                            )
+                        )
+                    }
+
                     emit(Result.failure(err))
                 },
                 onSuccess = { res ->

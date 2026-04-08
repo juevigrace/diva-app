@@ -2,6 +2,8 @@ package com.diva.app.presentation.viewmodel
 
 import com.diva.app.data.AppRepository
 import com.diva.app.presentation.state.AppState
+import com.diva.core.ui.resources.Res
+import com.diva.core.ui.resources.session_expired
 import com.diva.ui.messages.toToast
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.HomeDestination
@@ -10,12 +12,14 @@ import com.diva.ui.navigation.SignInDestination
 import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.ui.navigation.Navigator
+import io.github.juevigrace.diva.ui.toast.ToastMessage
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 
 class AppViewModel(
     private val repository: AppRepository,
@@ -59,12 +63,21 @@ class AppViewModel(
         repository.sync().collect { result ->
             result.fold(
                 onFailure = { err ->
-                    val cause = err.cause
-                    if (cause is ConstraintException && cause.field == "session") {
+                    println(err)
+                    if (err is ConstraintException && err.field == "session") {
                         _state.update { state ->
                             state.copy(
                                 sessionLoading = false,
                                 sessionSuccess = false
+                            )
+                        }
+
+                        if (err.constraint == "expired") {
+                            toaster.show(
+                                ToastMessage(
+                                    message = getString(Res.string.session_expired),
+                                    isError = true,
+                                )
                             )
                         }
                     } else {
@@ -87,7 +100,7 @@ class AppViewModel(
         repository.getPreferences().collect { res ->
             res.fold(
                 onFailure = { err ->
-                    if (err.cause is ConstraintException) {
+                    if (err is ConstraintException) {
                         println("Creating local preferences: $err")
                         handleNoLocalPreferences()
                     } else {

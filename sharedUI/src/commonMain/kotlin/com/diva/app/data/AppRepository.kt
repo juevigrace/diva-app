@@ -30,10 +30,9 @@ class AppRepositoryImpl(
     override fun sync(): Flow<Result<Unit>> {
         return callbackFlow {
             val job = scope.launch {
-                syncService.sync(
-                    onSessionSuccess = { trySend(Result.success(Unit)) },
-                    onError = { err -> trySend(Result.failure(err)) }
-                )
+                syncService.sync().collect { res ->
+                    trySend(res)
+                }
             }
 
             awaitClose {

@@ -9,6 +9,6 @@ data class AppState(
     val prefTries: Int = 0,
     val panic: Boolean = false,
     val shouldNavigate: Boolean = false,
-    val sessionLoading: Boolean = false,
+    val sessionLoading: Boolean = true,
     val sessionSuccess: Boolean = false,
 )

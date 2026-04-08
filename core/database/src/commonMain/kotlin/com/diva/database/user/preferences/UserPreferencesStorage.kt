@@ -2,11 +2,14 @@ package com.diva.database.user.preferences
 
 import com.diva.models.user.preferences.UserPreferences
 import io.github.juevigrace.diva.core.Option
+import kotlinx.coroutines.flow.Flow
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface UserPreferencesStorage {
     suspend fun getLocal(): Result<Option<UserPreferences>>
+
+    fun getLocalFlow(): Flow<Result<Option<UserPreferences>>>
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getByUser(userId: Uuid): Result<Option<UserPreferences>>

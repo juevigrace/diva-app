@@ -45,11 +45,15 @@ class UserPreferencesRepositoryImpl(
                 onSuccess = { opt ->
                     opt.fold(
                         onNone = {
-                            emit(Result.failure(ConstraintException(
-                                field = "preferences",
-                                constraint = "missing",
-                                value = "no preferences found"
-                            )))
+                            emit(
+                                Result.failure(
+                                    ConstraintException(
+                                        field = "preferences",
+                                        constraint = "missing",
+                                        value = "no preferences found"
+                                    )
+                                )
+                            )
                         },
                         onSome = { prefs ->
                             emit(Result.success(prefs))

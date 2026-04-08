@@ -8,7 +8,7 @@ sealed interface VerificationAction {
     data object UserVerification : VerificationAction
 
     @Serializable
-    data object PasswordConfirm : VerificationAction
+    data class PasswordReset(val email: String) : VerificationAction
 
     @Serializable
     data object Unspecified : VerificationAction

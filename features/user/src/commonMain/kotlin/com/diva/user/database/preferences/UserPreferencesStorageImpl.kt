@@ -10,6 +10,7 @@ import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
 import io.github.juevigrace.diva.core.getOrElse
 import io.github.juevigrace.diva.core.map
 import io.github.juevigrace.diva.database.DivaDatabase
+import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
@@ -20,9 +21,11 @@ class UserPreferencesStorageImpl(
 ) : UserPreferencesStorage {
 
     override suspend fun getLocal(): Result<Option<UserPreferences>> {
-        return db.getOne {
-            userPreferencesQueries.findLocal(mapper = ::mapToEntity)
-        }
+        return db.getOne { userPreferencesQueries.findLocal(mapper = ::mapToEntity) }
+    }
+
+    override fun getLocalFlow(): Flow<Result<Option<UserPreferences>>> {
+        return db.getOneAsFlow { userPreferencesQueries.findLocal(mapper = ::mapToEntity) }
     }
 
     @OptIn(ExperimentalUuidApi::class)
@@ -49,15 +52,12 @@ class UserPreferencesStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.INSERT),
-                        table = Option.Some("diva_user_preferences"),
-                        details = Option.Some("Failed to insert")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.INSERT),
+                    table = Option.Some("diva_user_preferences"),
+                    details = Option.Some("Failed to insert")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -73,15 +73,12 @@ class UserPreferencesStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.INSERT),
-                        table = Option.Some("diva_user_preferences"),
-                        details = Option.Some("Failed to insert")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.INSERT),
+                    table = Option.Some("diva_user_preferences"),
+                    details = Option.Some("Failed to insert")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -112,15 +109,12 @@ class UserPreferencesStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.UPDATE),
-                        table = Option.Some("diva_user_preferences"),
-                        details = Option.Some("Failed to update")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.UPDATE),
+                    table = Option.Some("diva_user_preferences"),
+                    details = Option.Some("Failed to update")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -148,15 +142,12 @@ class UserPreferencesStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.UPDATE),
-                        table = Option.Some("diva_user_preferences"),
-                        details = Option.Some("Failed to update")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.UPDATE),
+                    table = Option.Some("diva_user_preferences"),
+                    details = Option.Some("Failed to update")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -167,15 +158,12 @@ class UserPreferencesStorageImpl(
                 userPreferencesQueries.deleteById(id.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_preferences"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_preferences"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -186,15 +174,12 @@ class UserPreferencesStorageImpl(
                 userPreferencesQueries.deleteByUser(userId.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_preferences"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_preferences"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -205,15 +190,12 @@ class UserPreferencesStorageImpl(
                 userPreferencesQueries.deleteAll()
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_preferences"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_preferences"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 

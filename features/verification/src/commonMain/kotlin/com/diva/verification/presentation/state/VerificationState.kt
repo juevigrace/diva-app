@@ -13,4 +13,11 @@ data class VerificationState(
     val submitLoading: Boolean = false,
     val submitEnabled: Boolean = false,
     val submitSuccess: Boolean = false,
-)
+) {
+    val canGoBack: Boolean
+        get() = when (action) {
+            VerificationAction.Unspecified -> true
+            is VerificationAction.PasswordReset -> true
+            VerificationAction.UserVerification -> false
+        }
+}

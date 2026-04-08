@@ -18,7 +18,7 @@ class UserStorageImpl(
     private val db: DivaDatabase<DivaDB>
 ) : UserStorage {
     override suspend fun count(): Result<Long> {
-        return db.use { Result.success(userQueries.count().executeAsOne()) }
+        return db.use { userQueries.count().executeAsOne() }
     }
 
     override suspend fun getAll(limit: Int, offset: Int): Result<List<User>> {
@@ -56,15 +56,13 @@ class UserStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.INSERT),
-                        table = Option.Some("diva_user"),
-                        details = Option.Some("Failed to insert")
-                    )
+                throw
+                NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.INSERT),
+                    table = Option.Some("diva_user"),
+                    details = Option.Some("Failed to insert")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -93,15 +91,13 @@ class UserStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.UPDATE),
-                        table = Option.Some("diva_user"),
-                        details = Option.Some("Failed to update")
-                    )
+                throw
+                NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.UPDATE),
+                    table = Option.Some("diva_user"),
+                    details = Option.Some("Failed to update")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -122,15 +118,13 @@ class UserStorageImpl(
                 userQueries.deleteById(id.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw
+                NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -141,15 +135,13 @@ class UserStorageImpl(
                 userQueries.deleteAll()
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw
+                NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 

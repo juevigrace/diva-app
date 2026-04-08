@@ -9,8 +9,12 @@ import com.diva.models.user.User
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
 import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
+import io.github.juevigrace.diva.core.isEmpty
+import io.github.juevigrace.diva.core.map
 import io.github.juevigrace.diva.database.DivaDatabase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlin.map
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -22,12 +26,32 @@ class SessionStorageImpl(
 ) : SessionStorage {
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getCurrentSession(): Result<Option<Session>> {
-        return db.getOne { sessionQueries.findCurrent(mapper = ::mapToEntity) }
+        return db.getOne {
+            sessionQueries.findCurrentWithUser(mapper = ::mapToEntity)
+        }.map { opt ->
+            if (opt.isEmpty()) {
+                return@map db.getOne {
+                    sessionQueries.findCurrent(mapper = ::mapToEntity)
+                }.getOrDefault(Option.None)
+            } else {
+                return@map opt
+            }
+        }
     }
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getCurrentSessionFlow(): Flow<Result<Option<Session>>> {
-        return db.getOneAsFlow { sessionQueries.findCurrent(mapper = ::mapToEntity) }
+        return db.getOneAsFlow { sessionQueries.findCurrentWithUser(mapper = ::mapToEntity) }.map { res ->
+            res.map { opt ->
+                if (opt.isEmpty()) {
+                    return@map db.getOne {
+                        sessionQueries.findCurrent(mapper = ::mapToEntity)
+                    }.getOrDefault(Option.None)
+                } else {
+                    return@map opt
+                }
+            }
+        }
     }
 
     override suspend fun getAll(limit: Int, offset: Int): Result<List<Session>> {
@@ -68,12 +92,10 @@ class SessionStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.INSERT),
-                        table = Option.Some("diva_session"),
-                        details = Option.Some("Failed to insert")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.INSERT),
+                    table = Option.Some("diva_session"),
+                    details = Option.Some("Failed to insert")
                 )
             }
             Result.success(Unit)
@@ -104,12 +126,10 @@ class SessionStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.UPDATE),
-                        table = Option.Some("diva_session"),
-                        details = Option.Some("Failed to update")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.UPDATE),
+                    table = Option.Some("diva_session"),
+                    details = Option.Some("Failed to update")
                 )
             }
             Result.success(Unit)
@@ -133,12 +153,10 @@ class SessionStorageImpl(
                 sessionQueries.updateActive(id = id.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.UPDATE),
-                        table = Option.Some("diva_session"),
-                        details = Option.Some("Failed to update")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.UPDATE),
+                    table = Option.Some("diva_session"),
+                    details = Option.Some("Failed to update")
                 )
             }
             Result.success(Unit)
@@ -152,12 +170,10 @@ class SessionStorageImpl(
                 sessionQueries.deleteById(id.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_session"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_session"),
+                    details = Option.Some("Failed to delete")
                 )
             }
             Result.success(Unit)
@@ -170,12 +186,10 @@ class SessionStorageImpl(
                 sessionQueries.deleteAll()
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_session"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_session"),
+                    details = Option.Some("Failed to delete")
                 )
             }
             Result.success(Unit)

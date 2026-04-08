@@ -1,6 +1,7 @@
 package com.diva.verification.presentation.viewmodel
 
 import com.diva.core.ui.resources.Res
+import com.diva.core.ui.resources.email_sent
 import com.diva.core.ui.resources.error_action_not_specified
 import com.diva.models.actions.Actions
 import com.diva.models.verification.VerificationForm
@@ -14,7 +15,6 @@ import com.diva.verification.data.validation.VerificationValidator
 import com.diva.verification.presentation.events.VerificationEvents
 import com.diva.verification.presentation.state.VerificationState
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.ToastMessage
 import io.github.juevigrace.diva.ui.toast.Toaster
@@ -69,19 +69,13 @@ class VerificationViewModel(
         initialValue = _state.value,
     )
 
-    fun init(action: VerificationAction) {
-        _state.update { state ->
-            state.copy(
-                action = action,
-            )
-        }
-    }
-
     fun onEvent(event: VerificationEvents) {
         when (event) {
             VerificationEvents.OnBack -> navigator.pop()
-            is VerificationEvents.OnTokenChanged -> tokenChanged(event.token)
+            is VerificationEvents.OnRequest -> requestVerification()
+            is VerificationEvents.OnSetAction -> setAction(event.action)
             VerificationEvents.OnSubmit -> submit()
+            is VerificationEvents.OnTokenChanged -> tokenChanged(event.token)
         }
     }
 
@@ -99,7 +93,7 @@ class VerificationViewModel(
             )
         }
         when (_state.value.action) {
-            VerificationAction.PasswordConfirm -> handlePasswordConfirm()
+            is VerificationAction.PasswordReset -> handlePasswordConfirm()
             VerificationAction.UserVerification -> handleUserEmailVerification()
             VerificationAction.Unspecified -> {
                 scope.launch {
@@ -165,6 +159,61 @@ class VerificationViewModel(
                     }
                 )
             }
+        }
+    }
+
+    private fun requestVerification() {
+        when (val action = _state.value.action) {
+            is VerificationAction.PasswordReset -> handleRequestPasswordReset(action.email)
+            VerificationAction.UserVerification -> handleRequestUserVerification()
+            VerificationAction.Unspecified -> {
+                scope.launch {
+                    toaster.show(
+                        ToastMessage(
+                            message = getString(Res.string.error_action_not_specified),
+                            isError = true
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun handleRequestPasswordReset(email: String) {
+        scope.launch {
+            repository.requestPasswordReset(email).collect { result ->
+                result.fold(
+                    onFailure = { err ->
+                        toaster.show(err.toToast())
+                    },
+                    onSuccess = {
+                        toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
+                    }
+                )
+            }
+        }
+    }
+
+    private fun handleRequestUserVerification() {
+        scope.launch {
+            repository.requestUserVerification().collect { result ->
+                result.fold(
+                    onFailure = { err ->
+                        toaster.show(err.toToast())
+                    },
+                    onSuccess = {
+                        toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
+                    }
+                )
+            }
+        }
+    }
+
+    private fun setAction(action: VerificationAction) {
+        _state.update { state ->
+            state.copy(
+                action = action,
+            )
         }
     }
 }

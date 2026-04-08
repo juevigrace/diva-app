@@ -11,10 +11,9 @@ import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.errors.HttpException
 import io.github.juevigrace.diva.core.tryResult
 import io.github.juevigrace.diva.network.client.DivaClient
-import io.github.juevigrace.diva.network.client.patch
-import io.github.juevigrace.diva.network.client.post
 import io.github.juevigrace.diva.network.client.toDivaNetworkException
 import io.ktor.client.call.body
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 
 interface AuthApi {
@@ -33,39 +32,29 @@ class AuthApiImpl(
         return tryResult(
             onError = { e -> e.toDivaNetworkException() }
         ) {
-            client.post(
+            val response: HttpResponse = client.post(
                 path = "/api/auth/signIn",
-                body = dto
-            ).fold(
-                onSuccess = { response ->
-                    when (response.status) {
-                        HttpStatusCode.OK -> {
-                            val body: ApiResponse<SessionResponse> = response.body()
-                            body.data?.let { data -> Result.success(data) }
-                                ?: Result.failure(
-                                    ConstraintException(
-                                        field = "data",
-                                        constraint = "missing",
-                                        value = body.message
-                                    )
-                                )
-                        }
-                        else -> {
-                            val body: ApiResponse<Unit> = response.body()
-                            Result.failure(
-                                HttpException(
-                                    statusCode = Option.of(response.status.value),
-                                    url = Option.of("/api/auth/signIn"),
-                                    details = Option.of(body.message)
-                                )
-                            )
-                        }
-                    }
-                },
-                onFailure = {
-                    Result.failure(it)
+                body = dto,
+                serializer = SignInDto.serializer(),
+            ).getOrThrow()
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val body: ApiResponse<SessionResponse> = response.body()
+                    body.data ?: throw ConstraintException(
+                        field = "data",
+                        constraint = "missing",
+                        value = body.message
+                    )
                 }
-            )
+                else -> {
+                    val body: ApiResponse<Unit> = response.body()
+                    throw HttpException(
+                        statusCode = Option.of(response.status.value),
+                        url = Option.of("/api/auth/signIn"),
+                        details = Option.of(body.message)
+                    )
+                }
+            }
         }
     }
 
@@ -73,37 +62,29 @@ class AuthApiImpl(
         return tryResult(
             onError = { e -> e.toDivaNetworkException() }
         ) {
-            client.post(
+            val response: HttpResponse = client.post(
                 path = "/api/auth/signUp",
-                body = dto
-            ).fold(
-                onSuccess = { response ->
-                    when (response.status) {
-                        HttpStatusCode.Created -> {
-                            val body: ApiResponse<SessionResponse> = response.body()
-                            body.data?.let { data -> Result.success(data) }
-                                ?: Result.failure(
-                                    ConstraintException(
-                                        field = "data",
-                                        constraint = "missing",
-                                        value = body.message
-                                    )
-                                )
-                        }
-                        else -> {
-                            val body: ApiResponse<Unit> = response.body()
-                            Result.failure(
-                                HttpException(
-                                    statusCode = Option.of(response.status.value),
-                                    url = Option.of("/api/auth/signUp"),
-                                    details = Option.of(body.message)
-                                )
-                            )
-                        }
-                    }
-                },
-                onFailure = { Result.failure(it) }
-            )
+                body = dto,
+                serializer = SignUpDto.serializer(),
+            ).getOrThrow()
+            when (response.status) {
+                HttpStatusCode.Created -> {
+                    val body: ApiResponse<SessionResponse> = response.body()
+                    body.data ?: throw ConstraintException(
+                        field = "data",
+                        constraint = "missing",
+                        value = body.message
+                    )
+                }
+                else -> {
+                    val body: ApiResponse<Unit> = response.body()
+                    throw HttpException(
+                        statusCode = Option.of(response.status.value),
+                        url = Option.of("/api/auth/signUp"),
+                        details = Option.of(body.message)
+                    )
+                }
+            }
         }
     }
 
@@ -111,27 +92,21 @@ class AuthApiImpl(
         return tryResult(
             onError = { e -> e.toDivaNetworkException() }
         ) {
-            client.post(
+            val response: HttpResponse = client.post(
                 path = "/api/auth/signOut",
                 headers = mapOf("Authorization" to "Bearer $token"),
-            ).fold(
-                onSuccess = { response ->
-                    when (response.status) {
-                        HttpStatusCode.OK -> Result.success(Unit)
-                        else -> {
-                            val body: ApiResponse<Unit> = response.body()
-                            Result.failure(
-                                HttpException(
-                                    statusCode = Option.of(response.status.value),
-                                    url = Option.of("/api/auth/signOut"),
-                                    details = Option.of(body.message)
-                                )
-                            )
-                        }
-                    }
-                },
-                onFailure = { Result.failure(it) }
-            )
+            ).getOrThrow()
+            when (response.status) {
+                HttpStatusCode.OK -> return@tryResult
+                else -> {
+                    val body: ApiResponse<Unit> = response.body()
+                    throw HttpException(
+                        statusCode = Option.of(response.status.value),
+                        url = Option.of("/api/auth/signOut"),
+                        details = Option.of(body.message)
+                    )
+                }
+            }
         }
     }
 
@@ -139,27 +114,21 @@ class AuthApiImpl(
         return tryResult(
             onError = { e -> e.toDivaNetworkException() }
         ) {
-            client.post(
+            val response: HttpResponse = client.post(
                 path = "/api/auth/ping",
                 headers = mapOf("Authorization" to "Bearer $token"),
-            ).fold(
-                onSuccess = { response ->
-                    when (response.status) {
-                        HttpStatusCode.OK -> Result.success(Unit)
-                        else -> {
-                            val body: ApiResponse<Unit> = response.body()
-                            Result.failure(
-                                HttpException(
-                                    statusCode = Option.of(response.status.value),
-                                    url = Option.of("/api/auth/ping"),
-                                    details = Option.of(body.message)
-                                )
-                            )
-                        }
-                    }
-                },
-                onFailure = { Result.failure(it) }
-            )
+            ).getOrThrow()
+            when (response.status) {
+                HttpStatusCode.OK -> return@tryResult
+                else -> {
+                    val body: ApiResponse<Unit> = response.body()
+                    throw HttpException(
+                        statusCode = Option.of(response.status.value),
+                        url = Option.of("/api/auth/ping"),
+                        details = Option.of(body.message)
+                    )
+                }
+            }
         }
     }
 
@@ -170,38 +139,30 @@ class AuthApiImpl(
         return tryResult(
             onError = { e -> e.toDivaNetworkException() }
         ) {
-            client.post(
+            val response: HttpResponse = client.post(
                 path = "/api/auth/refresh",
                 headers = mapOf("Authorization" to "Bearer $token"),
                 body = dto,
-            ).fold(
-                onSuccess = { response ->
-                    when (response.status) {
-                        HttpStatusCode.OK -> {
-                            val body: ApiResponse<SessionResponse> = response.body()
-                            body.data?.let { data -> Result.success(data) }
-                                ?: Result.failure(
-                                    ConstraintException(
-                                        field = "data",
-                                        constraint = "missing",
-                                        value = body.message
-                                    )
-                                )
-                        }
-                        else -> {
-                            val body: ApiResponse<Unit> = response.body()
-                            Result.failure(
-                                HttpException(
-                                    statusCode = Option.of(response.status.value),
-                                    url = Option.of("/api/auth/refresh"),
-                                    details = Option.of(body.message)
-                                )
-                            )
-                        }
-                    }
-                },
-                onFailure = { Result.failure(it) }
-            )
+                serializer = SessionDataDto.serializer(),
+            ).getOrThrow()
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val body: ApiResponse<SessionResponse> = response.body()
+                    body.data ?: throw ConstraintException(
+                        field = "data",
+                        constraint = "missing",
+                        value = body.message
+                    )
+                }
+                else -> {
+                    val body: ApiResponse<Unit> = response.body()
+                    throw HttpException(
+                        statusCode = Option.of(response.status.value),
+                        url = Option.of("/api/auth/refresh"),
+                        details = Option.of(body.message)
+                    )
+                }
+            }
         }
     }
 
@@ -212,28 +173,23 @@ class AuthApiImpl(
         return tryResult(
             onError = { e -> e.toDivaNetworkException() }
         ) {
-            client.patch(
+            val response: HttpResponse = client.patch(
                 path = "/api/user/forgot/password",
                 body = dto,
                 headers = mapOf("Authorization" to "Bearer $token"),
-            ).fold(
-                onSuccess = { response ->
-                    when (response.status) {
-                        HttpStatusCode.OK -> Result.success(Unit)
-                        else -> {
-                            val body: ApiResponse<Unit> = response.body()
-                            Result.failure(
-                                HttpException(
-                                    statusCode = Option.of(response.status.value),
-                                    url = Option.of("/api/user/forgot/password"),
-                                    details = Option.of(body.message)
-                                )
-                            )
-                        }
-                    }
-                },
-                onFailure = { Result.failure(it) }
-            )
+                serializer = UpdatePasswordDto.serializer(),
+            ).getOrThrow()
+            when (response.status) {
+                HttpStatusCode.OK -> return@tryResult
+                else -> {
+                    val body: ApiResponse<Unit> = response.body()
+                    throw HttpException(
+                        statusCode = Option.of(response.status.value),
+                        url = Option.of("/api/user/forgot/password"),
+                        details = Option.of(body.message)
+                    )
+                }
+            }
         }
     }
 }

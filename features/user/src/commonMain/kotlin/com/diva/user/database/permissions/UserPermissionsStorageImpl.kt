@@ -37,15 +37,12 @@ class UserPermissionsStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.INSERT),
-                        table = Option.Some("diva_user_permissions"),
-                        details = Option.Some("Failed to insert")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.INSERT),
+                    table = Option.Some("diva_user_permissions"),
+                    details = Option.Some("Failed to insert")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -79,15 +76,12 @@ class UserPermissionsStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.UPDATE),
-                        table = Option.Some("diva_user_permissions"),
-                        details = Option.Some("Failed to update")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.UPDATE),
+                    table = Option.Some("diva_user_permissions"),
+                    details = Option.Some("Failed to update")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -114,15 +108,12 @@ class UserPermissionsStorageImpl(
                 userPermissionsQueries.deleteById(permId.toString(), userId.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_permissions"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_permissions"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -133,15 +124,12 @@ class UserPermissionsStorageImpl(
                 userPermissionsQueries.deleteByUser(userId.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_permissions"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_permissions"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -152,15 +140,12 @@ class UserPermissionsStorageImpl(
                 userPermissionsQueries.deleteAll()
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_permissions"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_permissions"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 }

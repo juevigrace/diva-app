@@ -8,7 +8,6 @@ import com.diva.models.actions.safeActionsValueOf
 import com.diva.models.api.user.action.event.UserActionsEvents
 import com.diva.models.user.actions.UserAction
 import com.diva.user.api.client.actions.UserActionsApi
-import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.fold
 import kotlinx.coroutines.flow.Flow
@@ -60,7 +59,6 @@ class UserActionsRepositoryImpl(
     @OptIn(ExperimentalUuidApi::class)
     override fun getActions(): Flow<Result<Map<Actions, UserAction>>> {
         return withSession(sessionRepository::getCurrent) { session ->
-            println("Getting actions for $session")
             storage.getAllByUserFlow(session.user.id).collect { result ->
                 result.fold(
                     onFailure = { err -> emit(Result.failure(err)) },
@@ -69,7 +67,7 @@ class UserActionsRepositoryImpl(
                             fetchActions().collect { res ->
                                 res.fold(
                                     onFailure = { err -> emit(Result.failure(err)) },
-                                    onSuccess = { }
+                                    onSuccess = { return@collect }
                                 )
                             }
                         }

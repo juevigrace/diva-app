@@ -17,11 +17,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlin.fold
 import kotlin.uuid.ExperimentalUuidApi
 
 interface VerificationRepository : Repository {
-    suspend fun requestVerification(email: String, action: Actions): Flow<Result<Unit>>
-    suspend fun verify(token: String, action: Actions): Flow<Result<Unit>>
+    fun requestUserVerification(): Flow<Result<Unit>>
+    fun requestPasswordReset(email: String): Flow<Result<Unit>>
+    fun verify(token: String, action: Actions): Flow<Result<Unit>>
 }
 
 class VerificationRepositoryImpl(
@@ -29,19 +31,25 @@ class VerificationRepositoryImpl(
     private val uaRepository: UserActionsStorage,
     private val sRepository: SessionRepository,
 ) : VerificationRepository {
-    override suspend fun requestVerification(
-        email: String,
-        action: Actions
-    ): Flow<Result<Unit>> {
+    override fun requestUserVerification(): Flow<Result<Unit>> {
+        return withSession(sRepository::getCurrent) { session ->
+            api.requestVerification(RequestVerificationDto(session.user.email, Actions.USER_VERIFICATION.name)).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { emit(Result.success(Unit)) }
+            )
+        }
+    }
+
+    override fun requestPasswordReset(email: String): Flow<Result<Unit>> {
         return flow {
-            api.requestVerification(RequestVerificationDto(email, action.name)).fold(
+            api.requestVerification(RequestVerificationDto(email, Actions.PASSWORD_RESET.name)).fold(
                 onFailure = { err -> emit(Result.failure(err)) },
                 onSuccess = { emit(Result.success(Unit)) }
             )
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun verify(
+    override fun verify(
         token: String,
         action: Actions
     ): Flow<Result<Unit>> {

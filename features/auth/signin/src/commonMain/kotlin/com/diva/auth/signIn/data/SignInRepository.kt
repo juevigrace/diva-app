@@ -6,6 +6,7 @@ import com.diva.models.auth.Session
 import com.diva.models.auth.SignInForm
 import io.github.juevigrace.diva.core.fold
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -35,6 +36,6 @@ class SignInRepositoryImpl(
                     }
                 }
             )
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(Dispatchers.IO)
     }
 }

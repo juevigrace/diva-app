@@ -8,8 +8,9 @@ import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.errors.HttpException
 import io.github.juevigrace.diva.core.tryResult
 import io.github.juevigrace.diva.network.client.DivaClient
-import io.github.juevigrace.diva.network.client.get
+import io.github.juevigrace.diva.network.client.toDivaNetworkException
 import io.ktor.client.call.body
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -28,39 +29,30 @@ class UserActionsApiImpl(
 ) : UserActionsApi {
     override suspend fun getActions(token: String): Result<List<ActionResponse>> {
         return tryResult(
-            onError = { e -> e }
+            onError = { e -> e.toDivaNetworkException() }
         ) {
-            client.get(
+            val response: HttpResponse = client.get(
                 path = "/api/user/me/actions",
                 headers = mapOf("Authorization" to "Bearer $token")
-            ).fold(
-                onSuccess = { response ->
-                    when (response.status) {
-                        HttpStatusCode.OK -> {
-                            val body: ApiResponse<List<ActionResponse>> = response.body()
-                            body.data?.let { data -> Result.success(data) }
-                                ?: Result.failure(
-                                    ConstraintException(
-                                        field = "data",
-                                        constraint = "missing",
-                                        value = body.message
-                                    )
-                                )
-                        }
-                        else -> {
-                            val body: ApiResponse<Unit> = response.body()
-                            Result.failure(
-                                HttpException(
-                                    statusCode = Option.of(response.status.value),
-                                    url = Option.of("/api/user/me/actions"),
-                                    details = Option.of(body.message)
-                                )
-                            )
-                        }
-                    }
-                },
-                onFailure = { Result.failure(it) }
-            )
+            ).getOrThrow()
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val body: ApiResponse<List<ActionResponse>> = response.body()
+                    body.data ?: throw ConstraintException(
+                        field = "data",
+                        constraint = "missing",
+                        value = body.message
+                    )
+                }
+                else -> {
+                    val body: ApiResponse<Unit> = response.body()
+                    throw HttpException(
+                        statusCode = Option.of(response.status.value),
+                        url = Option.of("/api/user/me/actions"),
+                        details = Option.of(body.message)
+                    )
+                }
+            }
         }
     }
     override suspend fun streamActions(token: String): Flow<Result<UserActionsEvents>> {

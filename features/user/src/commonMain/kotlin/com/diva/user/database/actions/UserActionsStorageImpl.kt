@@ -61,15 +61,12 @@ class UserActionsStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.INSERT),
-                        table = Option.Some("diva_user_pending_actions"),
-                        details = Option.Some("Failed to insert")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.INSERT),
+                    table = Option.Some("diva_user_pending_actions"),
+                    details = Option.Some("Failed to insert")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -93,15 +90,12 @@ class UserActionsStorageImpl(
                 userActionsQueries.deleteById(id.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_pending_actions"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_pending_actions"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -118,15 +112,12 @@ class UserActionsStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_pending_actions"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_pending_actions"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -137,15 +128,12 @@ class UserActionsStorageImpl(
                 userActionsQueries.deleteByUser(userId.toString())
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_pending_actions"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_pending_actions"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 
@@ -155,15 +143,12 @@ class UserActionsStorageImpl(
                 userActionsQueries.deleteAll()
             }
             if (rows.toInt() == 0) {
-                return@use Result.failure(
-                    NoRowsAffectedException(
-                        operation = Option.of(DatabaseOperation.DELETE),
-                        table = Option.Some("diva_user_pending_actions"),
-                        details = Option.Some("Failed to delete")
-                    )
+                throw NoRowsAffectedException(
+                    operation = Option.of(DatabaseOperation.DELETE),
+                    table = Option.Some("diva_user_pending_actions"),
+                    details = Option.Some("Failed to delete")
                 )
             }
-            Result.success(Unit)
         }
     }
 

@@ -7,9 +7,8 @@ import com.diva.models.api.user.dtos.UpdateEmailDto
 import com.diva.models.api.user.dtos.UpdateUserDto
 import com.diva.models.user.User
 import com.diva.user.api.client.me.UserMeApi
-import io.github.juevigrace.diva.core.errors.ProcessingException
+import io.github.juevigrace.diva.core.errors.DuplicateKeyException
 import io.github.juevigrace.diva.core.fold
-import io.github.juevigrace.diva.core.map
 import kotlinx.coroutines.flow.Flow
 import kotlin.fold
 import kotlin.uuid.ExperimentalUuidApi
@@ -35,9 +34,17 @@ class UserMeRepositoryImpl(
                 onSuccess = { option ->
                     option.fold(
                         onNone = {
-                            fetchMe(session.accessToken).fold(
+                            userMeClient.getMe(session.accessToken).fold(
                                 onFailure = { err -> emit(Result.failure(err)) },
-                                onSuccess = { }
+                                onSuccess = { res ->
+                                    val user = User.fromResponse(res)
+                                    upsertUser(user).fold(
+                                        onFailure = { err -> emit(Result.failure(err)) },
+                                        onSuccess = {
+                                            getMe().collect { emit(it) }
+                                        }
+                                    )
+                                }
                             )
                         },
                         onSome = { user ->
@@ -49,28 +56,17 @@ class UserMeRepositoryImpl(
         }
     }
 
-    private suspend fun fetchMe(token: String): Result<Unit> {
-        return userMeClient.getMe(token).map { res ->
-            val user = User.fromResponse(res)
-            upsertUser(user)
-        }
-    }
-
     private suspend fun upsertUser(user: User): Result<Unit> {
-        return storage.insert(user)
-            .fold(
-                onSuccess = { Result.success(Unit) },
-                onFailure = { err ->
-                    if (
-                        err is ProcessingException &&
-                        err.message?.contains("SQLITE_CONSTRAINT_UNIQUE") == true
-                    ) {
-                        storage.update(user)
-                    } else {
-                        Result.failure(err)
-                    }
+        return storage.insert(user).fold(
+            onSuccess = { Result.success(Unit) },
+            onFailure = { err ->
+                if (err is DuplicateKeyException) {
+                    storage.update(user)
+                } else {
+                    Result.failure(err)
                 }
-            )
+            }
+        )
     }
 
     override fun updateMe(user: User): Flow<Result<Unit>> {
@@ -83,7 +79,12 @@ class UserMeRepositoryImpl(
             )
             userMeClient.updateMe(dto, value.accessToken).fold(
                 onFailure = { err -> emit(Result.failure(err)) },
-                onSuccess = { emit(Result.success(Unit)) }
+                onSuccess = {
+                    storage.update(user).fold(
+                        onFailure = { err -> emit(Result.failure(err)) },
+                        onSuccess = { emit(Result.success(Unit)) }
+                    )
+                }
             )
         }
     }
