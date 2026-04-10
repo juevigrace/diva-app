@@ -2,10 +2,12 @@ package com.diva.onboarding.presentation.viewmodel
 
 import com.diva.onboarding.presentation.events.OnboardingEvents
 import com.diva.onboarding.presentation.state.OnboardingState
+import com.diva.ui.messages.toToast
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.SignInDestination
 import com.diva.user.data.preferences.UserPreferencesRepository
 import io.github.juevigrace.diva.ui.navigation.Navigator
+import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +18,8 @@ import kotlin.uuid.ExperimentalUuidApi
 
 class OnboardingViewModel(
     private val navigator: Navigator<Destination>,
-    private val prefsRepository: UserPreferencesRepository
+    private val prefsRepository: UserPreferencesRepository,
+    private val toaster: Toaster,
 ) : DivaViewModel() {
     private val _state = MutableStateFlow(OnboardingState())
     val state: StateFlow<OnboardingState> = _state.asStateFlow()
@@ -33,16 +36,14 @@ class OnboardingViewModel(
     @OptIn(ExperimentalUuidApi::class)
     private fun handleOnboardingCompleted() {
         scope.launch {
-            prefsRepository.getLocalPreferences().collect { lRes ->
-                lRes.fold(
-                    onFailure = { println(it) },
-                    onSuccess = { prefs ->
-                        prefsRepository.updatePreferences(prefs.copy(onboardingCompleted = true)).collect { uRes ->
-                            uRes.onFailure { println(it) }
-                        }
+            prefsRepository.getLocalPreferences().fold(
+                onFailure = { err -> toaster.show(err.toToast()) },
+                onSuccess = { prefs ->
+                    prefsRepository.updatePreferences(prefs.copy(onboardingCompleted = true)).onFailure { err ->
+                        toaster.show(err.toToast())
                     }
-                )
-            }
+                }
+            )
         }
         navigator.replaceAll(SignInDestination)
     }

@@ -5,6 +5,7 @@ import com.diva.models.api.user.preferences.dtos.UserPreferencesDto
 import com.diva.models.api.user.preferences.responses.UserPreferencesResponse
 import com.diva.models.safeValueOfTheme
 import io.github.juevigrace.diva.core.Option
+import io.github.juevigrace.diva.core.getOrElse
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
@@ -17,8 +18,8 @@ data class UserPreferences(
     val onboardingCompleted: Boolean = false,
     val language: String = "en",
     val lastSyncAt: Option<Instant> = Option.None,
-    val createdAt: Instant = Clock.System.now(),
-    val updatedAt: Instant = Clock.System.now()
+    val createdAt: Option<Instant> = Option.None,
+    val updatedAt: Option<Instant> = Option.None,
 ) {
     fun toPreferenceDto(): UserPreferencesDto {
         return UserPreferencesDto(
@@ -26,8 +27,8 @@ data class UserPreferences(
             theme = theme.name,
             onboardingCompleted = onboardingCompleted,
             language = language,
-            createdAt = createdAt.toEpochMilliseconds(),
-            updatedAt = updatedAt.toEpochMilliseconds()
+            createdAt = createdAt.getOrElse { Clock.System.now() }.toEpochMilliseconds(),
+            updatedAt = updatedAt.getOrElse { Clock.System.now() }.toEpochMilliseconds()
         )
     }
 
@@ -39,8 +40,8 @@ data class UserPreferences(
                 onboardingCompleted = response.onboardingCompleted,
                 language = response.language,
                 lastSyncAt = Option.of(Instant.fromEpochMilliseconds(response.lastSyncAt)),
-                createdAt = Instant.fromEpochMilliseconds(response.createdAt),
-                updatedAt = Instant.fromEpochMilliseconds(response.updatedAt)
+                createdAt = Option.of(Instant.fromEpochMilliseconds(response.createdAt)),
+                updatedAt = Option.of(Instant.fromEpochMilliseconds(response.updatedAt))
             )
         }
     }

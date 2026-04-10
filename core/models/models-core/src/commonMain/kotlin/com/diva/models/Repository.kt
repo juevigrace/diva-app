@@ -17,7 +17,7 @@ interface Repository {
     val scope: CoroutineScope
         get() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    fun<T> withSession(
+    fun<T> withSessionObserve(
         sessionCall: suspend () -> Flow<Result<Session>>,
         onFound: suspend FlowCollector<Result<T>>.(session: Session) -> Unit
     ): Flow<Result<T>> {
@@ -31,5 +31,29 @@ interface Repository {
                 )
             }
         }.flowOn(Dispatchers.IO)
+    }
+
+    fun<T> withSessionFlow(
+        sessionCall: suspend () -> Result<Session>,
+        onFound: suspend FlowCollector<Result<T>>.(session: Session) -> Unit
+    ): Flow<Result<T>> {
+        return flow {
+            sessionCall().fold(
+                onFailure = { err -> emit(Result.failure(err)) },
+                onSuccess = { session ->
+                    onFound(session)
+                }
+            )
+        }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun<T> withSession(
+        sessionCall: suspend () -> Result<Session>,
+        onFound: suspend (session: Session) -> Result<T>
+    ): Result<T> {
+        return sessionCall().fold(
+            onFailure = { err -> Result.failure(err) },
+            onSuccess = { session -> onFound(session) }
+        )
     }
 }

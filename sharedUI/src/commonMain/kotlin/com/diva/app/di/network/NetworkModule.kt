@@ -22,7 +22,7 @@ fun networkModule(config: AppConfig): Module {
                 installOrReplace(Logging) {
                     logger = DivaClient.DEFAULT_LOGGER
                     level = if (config.debug) {
-                        LogLevel.INFO
+                        LogLevel.BODY
                     } else {
                         LogLevel.NONE
                     }

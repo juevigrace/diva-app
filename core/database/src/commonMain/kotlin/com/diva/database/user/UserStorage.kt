@@ -19,13 +19,9 @@ interface UserStorage {
     @OptIn(ExperimentalUuidApi::class)
     fun getByIdFlow(id: Uuid): Flow<Result<Option<User>>>
 
-    suspend fun insert(item: User): Result<Unit>
+    suspend fun upsert(item: User): Result<Unit>
 
-    suspend fun insertAll(items: List<User>): Result<Unit>
-
-    suspend fun update(item: User): Result<Unit>
-
-    suspend fun updateAll(items: List<User>): Result<Unit>
+    suspend fun upsertAll(items: List<User>): Result<Unit>
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun delete(id: Uuid): Result<Unit>

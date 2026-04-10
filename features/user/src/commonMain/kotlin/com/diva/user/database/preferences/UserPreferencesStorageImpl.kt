@@ -6,11 +6,10 @@ import com.diva.models.Theme
 import com.diva.models.user.preferences.UserPreferences
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
+import io.github.juevigrace.diva.core.errors.DuplicateKeyException
 import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
 import io.github.juevigrace.diva.core.getOrElse
-import io.github.juevigrace.diva.core.map
 import io.github.juevigrace.diva.database.DivaDatabase
-import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
@@ -24,45 +23,13 @@ class UserPreferencesStorageImpl(
         return db.getOne { userPreferencesQueries.findLocal(mapper = ::mapToEntity) }
     }
 
-    override fun getLocalFlow(): Flow<Result<Option<UserPreferences>>> {
-        return db.getOneAsFlow { userPreferencesQueries.findLocal(mapper = ::mapToEntity) }
-    }
-
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getByUser(userId: Uuid): Result<Option<UserPreferences>> {
         return db.getOne { userPreferencesQueries.findByUser(userId.toString(), mapper = ::mapToEntity) }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun insertCloud(
-        prefs: UserPreferences,
-        userId: Uuid
-    ): Result<Unit> {
-        return db.use {
-            val rows: Long = transactionWithResult {
-                userPreferencesQueries.insertCloud(
-                    id = prefs.id.toString(),
-                    user_id = userId.toString(),
-                    theme = prefs.theme,
-                    onboarding_completed = prefs.onboardingCompleted,
-                    language = prefs.language,
-                    last_sync_at = prefs.lastSyncAt.getOrElse { Clock.System.now() }.toEpochMilliseconds(),
-                    created_at = prefs.createdAt.toEpochMilliseconds(),
-                    updated_at = prefs.updatedAt.toEpochMilliseconds(),
-                )
-            }
-            if (rows.toInt() == 0) {
-                throw NoRowsAffectedException(
-                    operation = Option.of(DatabaseOperation.INSERT),
-                    table = Option.Some("diva_user_preferences"),
-                    details = Option.Some("Failed to insert")
-                )
-            }
-        }
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override suspend fun insertLocal(prefs: UserPreferences): Result<Unit> {
+    private suspend fun insert(prefs: UserPreferences): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userPreferencesQueries.insert(
@@ -70,6 +37,9 @@ class UserPreferencesStorageImpl(
                     theme = prefs.theme,
                     onboarding_completed = prefs.onboardingCompleted,
                     language = prefs.language,
+                    last_sync_at = prefs.lastSyncAt.getOrElse { null }?.toEpochMilliseconds(),
+                    created_at = prefs.createdAt.getOrElse { Clock.System.now() }.toEpochMilliseconds(),
+                    updated_at = prefs.updatedAt.getOrElse { Clock.System.now() }.toEpochMilliseconds(),
                 )
             }
             if (rows.toInt() == 0) {
@@ -83,20 +53,7 @@ class UserPreferencesStorageImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun insertAll(map: Map<Uuid, List<UserPreferences>>): Result<Unit> {
-        for ((key, value) in map) {
-            for (pref in value) {
-                val result = insertCloud(pref, key)
-                if (result.isFailure) {
-                    return result
-                }
-            }
-        }
-        return Result.success(Unit)
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override suspend fun update(prefs: UserPreferences): Result<Unit> {
+    private suspend fun update(prefs: UserPreferences): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userPreferencesQueries.update(
@@ -105,7 +62,6 @@ class UserPreferencesStorageImpl(
                     onboarding_completed = prefs.onboardingCompleted,
                     language = prefs.language,
                     last_sync_at = prefs.lastSyncAt.getOrElse { null }?.toEpochMilliseconds(),
-                    updated_at = prefs.updatedAt.toEpochMilliseconds()
                 )
             }
             if (rows.toInt() == 0) {
@@ -118,10 +74,22 @@ class UserPreferencesStorageImpl(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
-    override suspend fun updateAll(list: List<UserPreferences>): Result<Unit> {
-        for (pref in list) {
-            val result = update(pref)
+    override suspend fun upsert(item: UserPreferences): Result<Unit> {
+        return insert(item).fold(
+            onFailure = { err ->
+                if (err is DuplicateKeyException) {
+                    update(item)
+                } else {
+                    Result.failure(err)
+                }
+            },
+            onSuccess = { Result.success(Unit) }
+        )
+    }
+
+    override suspend fun upsertAll(items: List<UserPreferences>): Result<Unit> {
+        for (item in items) {
+            val result = upsert(item)
             if (result.isFailure) {
                 return result
             }
@@ -215,8 +183,8 @@ class UserPreferencesStorageImpl(
             onboardingCompleted = onboardingCompleted,
             language = language,
             lastSyncAt = Option.of(lastSyncAt?.let { Instant.fromEpochMilliseconds(it) }),
-            createdAt = Instant.fromEpochMilliseconds(createdAt),
-            updatedAt = Instant.fromEpochMilliseconds(updatedAt),
+            createdAt = Option.of(Instant.fromEpochMilliseconds(createdAt)),
+            updatedAt = Option.of(Instant.fromEpochMilliseconds(updatedAt)),
         )
     }
 }

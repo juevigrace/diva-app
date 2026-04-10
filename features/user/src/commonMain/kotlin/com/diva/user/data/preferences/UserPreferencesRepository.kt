@@ -7,29 +7,21 @@ import com.diva.models.user.preferences.UserPreferences
 import com.diva.user.api.client.preferences.UserPreferencesApi
 import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.fold
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlin.fold
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface UserPreferencesRepository : Repository {
-    fun getLocalPreferences(): Flow<Result<UserPreferences>>
-
-    fun createLocalPreferences(): Flow<Result<Unit>>
+    suspend fun getLocalPreferences(): Result<UserPreferences>
 
     fun getUserPreferences(): Flow<Result<UserPreferences>>
 
-    fun createCloudPreferences(prefs: UserPreferences): Flow<Result<Unit>>
+    suspend fun createCloudPreferences(prefs: UserPreferences): Result<Unit>
 
-    fun updatePreferences(prefs: UserPreferences): Flow<Result<Unit>>
+    suspend fun updatePreferences(prefs: UserPreferences): Result<Unit>
 
-    @OptIn(ExperimentalUuidApi::class)
-    fun updateLocalPrefUserId(id: Uuid): Flow<Result<Unit>>
-
-    fun syncPreferences(): Flow<Result<Unit>>
+    suspend fun updateLocalPrefUserId(): Result<Unit>
 }
 
 class UserPreferencesRepositoryImpl(
@@ -38,10 +30,30 @@ class UserPreferencesRepositoryImpl(
     private val client: UserPreferencesApi,
 ) : UserPreferencesRepository {
     @OptIn(ExperimentalUuidApi::class)
-    override fun getLocalPreferences(): Flow<Result<UserPreferences>> {
-        return flow {
-            storage.getLocal().fold(
-                onFailure = { emit(Result.failure(it)) },
+    override suspend fun getLocalPreferences(): Result<UserPreferences> {
+        return storage.getLocal().fold(
+            onFailure = { err -> Result.failure(err) },
+            onSuccess = { opt ->
+                opt.fold(
+                    onNone = {
+                        val prefs = UserPreferences(id = Uuid.random())
+                        storage.upsert(prefs).onFailure { err ->
+                            return@fold Result.failure(err)
+                        }
+                        return@fold getLocalPreferences()
+                    },
+                    onSome = { prefs -> Result.success(prefs) }
+                )
+            }
+        )
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    override fun getUserPreferences(): Flow<Result<UserPreferences>> {
+        // TODO: modify this to fetch from cloud
+        return withSessionFlow(sessionRepository::getCurrent) { session ->
+            storage.getByUser(session.user.id).fold(
+                onFailure = { err -> emit(Result.failure(err)) },
                 onSuccess = { opt ->
                     opt.fold(
                         onNone = {
@@ -50,7 +62,7 @@ class UserPreferencesRepositoryImpl(
                                     ConstraintException(
                                         field = "preferences",
                                         constraint = "missing",
-                                        value = "no preferences found"
+                                        value = "null"
                                     )
                                 )
                             )
@@ -61,70 +73,20 @@ class UserPreferencesRepositoryImpl(
                     )
                 }
             )
-        }.flowOn(Dispatchers.IO)
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override fun createLocalPreferences(): Flow<Result<Unit>> {
-        return flow {
-            val prefs = UserPreferences(id = Uuid.random())
-            storage.insertLocal(prefs).fold(
-                onFailure = { err -> emit(Result.failure(err)) },
-                onSuccess = {
-                    emit(Result.success(Unit))
-                }
-            )
-        }.flowOn(Dispatchers.IO)
-    }
-
-    override fun getUserPreferences(): Flow<Result<UserPreferences>> {
-        return withSession(sessionRepository::getCurrent) { }
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override fun createCloudPreferences(prefs: UserPreferences): Flow<Result<Unit>> {
-        return withSession(sessionRepository::getCurrent) { session ->
-            storage.insertCloud(prefs, session.user.id).fold(
-                onFailure = { err -> emit(Result.failure(err)) },
-                onSuccess = { emit(Result.success(Unit)) }
-            )
         }
     }
 
-    override fun updatePreferences(prefs: UserPreferences): Flow<Result<Unit>> {
-        return flow {
-            storage.update(prefs).fold(
-                onFailure = { err -> emit(Result.failure(err)) },
-                onSuccess = { emit(Result.success(Unit)) }
-            )
-        }.flowOn(Dispatchers.IO)
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun createCloudPreferences(prefs: UserPreferences): Result<Unit> {
+        TODO()
+    }
+
+    override suspend fun updatePreferences(prefs: UserPreferences): Result<Unit> {
+        TODO()
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun updateLocalPrefUserId(id: Uuid): Flow<Result<Unit>> {
-        return withSession(sessionRepository::getCurrent) { value ->
-            storage.updateUserId(id, value.user.id).fold(
-                onFailure = { err -> emit(Result.failure(err)) },
-                onSuccess = { emit(Result.success(Unit)) }
-            )
-        }
-    }
-
-    override fun syncPreferences(): Flow<Result<Unit>> {
-        return withSession(sessionRepository::getCurrent) { value ->
-            client.updatePreferences(value.user.preferences.toPreferenceDto(), value.accessToken).fold(
-                onFailure = { err ->
-                    if (err.cause is ConstraintException) {
-                        client.createPreferences(value.user.preferences.toPreferenceDto(), value.accessToken).fold(
-                            onFailure = { err -> emit(Result.failure(err)) },
-                            onSuccess = { emit(Result.success(Unit)) }
-                        )
-                    } else {
-                        emit(Result.failure(err))
-                    }
-                },
-                onSuccess = { emit(Result.success(Unit)) }
-            )
-        }
+    override suspend fun updateLocalPrefUserId(): Result<Unit> {
+        TODO()
     }
 }

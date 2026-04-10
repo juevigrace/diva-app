@@ -133,30 +133,28 @@ class SignInViewModel(
         }
 
         scope.launch {
-            repository.signIn(formState.value).collect { result ->
-                result.fold(
-                    onFailure = { err ->
-                        toaster.show(err.toToast())
-                        _state.update { state ->
-                            state.copy(
-                                submitLoading = false,
-                                submitEnabled = true,
-                                submitSuccess = false,
-                            )
-                        }
-                    },
-                    onSuccess = { actions ->
-                        _state.update { state ->
-                            state.copy(
-                                submitLoading = false,
-                                submitSuccess = true
-                            )
-                        }
-
-                        navigator.replaceAll(HomeDestination)
+            repository.signIn(formState.value).fold(
+                onFailure = { err ->
+                    toaster.show(err.toToast())
+                    _state.update { state ->
+                        state.copy(
+                            submitLoading = false,
+                            submitEnabled = true,
+                            submitSuccess = false,
+                        )
                     }
-                )
-            }
+                },
+                onSuccess = { actions ->
+                    _state.update { state ->
+                        state.copy(
+                            submitLoading = false,
+                            submitSuccess = true
+                        )
+                    }
+
+                    navigator.replaceAll(HomeDestination)
+                }
+            )
         }
     }
 

@@ -15,10 +15,11 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface UserActionsRepository : Repository {
-    fun fetchActions(): Flow<Result<Unit>>
     fun getActions(): Flow<Result<Map<Actions, UserAction>>>
-    fun getAction(action: Actions): Flow<Result<Actions>>
+    suspend fun getAction(action: Actions): Result<Actions>
     fun syncActions(): Flow<Result<Unit>>
+    suspend fun createAction(action: Actions): Result<Unit>
+    suspend fun deleteByAction(action: Actions): Result<Unit>
 }
 
 class UserActionsRepositoryImpl(
@@ -27,10 +28,29 @@ class UserActionsRepositoryImpl(
     private val sessionRepository: SessionRepository,
 ) : UserActionsRepository {
     @OptIn(ExperimentalUuidApi::class)
-    override fun fetchActions(): Flow<Result<Unit>> {
+    override fun getActions(): Flow<Result<Map<Actions, UserAction>>> {
+        return withSessionFlow(sessionRepository::getCurrent) { session ->
+            storage.getAllByUserFlow(session.user.id).collect { result ->
+                result.fold(
+                    onFailure = { err -> emit(Result.failure(err)) },
+                    onSuccess = { actions ->
+                        if (actions.isEmpty()) {
+                            fetchActions().onFailure { err ->
+                                return@fold emit(Result.failure(err))
+                            }
+                        }
+                        emit(Result.success(actions.associateBy { it.action }))
+                    }
+                )
+            }
+        }
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    private suspend fun fetchActions(): Result<Unit> {
         return withSession(sessionRepository::getCurrent) { session ->
             api.getActions(session.accessToken).fold(
-                onFailure = { err -> emit(Result.failure(err)) },
+                onFailure = { err -> Result.failure(err) },
                 onSuccess = { res ->
                     val actions = res.mapNotNull { actionRes ->
                         val action = safeActionsValueOf(actionRes.actionName)
@@ -47,58 +67,30 @@ class UserActionsRepositoryImpl(
                         )
                         uAction
                     }
-                    storage.insertAll(mapOf(session.user.id to actions)).fold(
-                        onFailure = { err -> emit(Result.failure(err)) },
-                        onSuccess = { emit(Result.success(Unit)) }
-                    )
+
+                    storage.insertAll(mapOf(session.user.id to actions))
                 }
             )
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun getActions(): Flow<Result<Map<Actions, UserAction>>> {
-        return withSession(sessionRepository::getCurrent) { session ->
-            storage.getAllByUserFlow(session.user.id).collect { result ->
-                result.fold(
-                    onFailure = { err -> emit(Result.failure(err)) },
-                    onSuccess = { actions ->
-                        if (actions.isEmpty()) {
-                            fetchActions().collect { res ->
-                                res.fold(
-                                    onFailure = { err -> emit(Result.failure(err)) },
-                                    onSuccess = { return@collect }
-                                )
-                            }
-                        }
-                        emit(Result.success(actions.associateBy { it.action }))
-                    }
-                )
-            }
-        }
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override fun getAction(action: Actions): Flow<Result<Actions>> {
+    override suspend fun getAction(action: Actions): Result<Actions> {
         return withSession(sessionRepository::getCurrent) { session ->
             storage.getOneByAction(action, session.user.id).fold(
-                onFailure = { err -> emit(Result.failure(err)) },
+                onFailure = { err -> Result.failure(err) },
                 onSuccess = { option ->
                     option.fold(
                         onNone = {
-                            emit(
-                                Result.failure(
-                                    ConstraintException(
-                                        field = "action",
-                                        constraint = "missing",
-                                        value = "$action not found"
-                                    )
+                            Result.failure(
+                                ConstraintException(
+                                    field = "action",
+                                    constraint = "missing",
+                                    value = "$action not found"
                                 )
                             )
                         },
-                        onSome = { action ->
-                            emit(Result.success(action.action))
-                        }
+                        onSome = { action -> Result.success(action.action) }
                     )
                 }
             )
@@ -107,7 +99,7 @@ class UserActionsRepositoryImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     override fun syncActions(): Flow<Result<Unit>> {
-        return withSession(sessionRepository::getCurrent) { session ->
+        return withSessionFlow(sessionRepository::getCurrent) { session ->
             api.streamActions(session.accessToken).collect { result ->
                 result.fold(
                     onFailure = { err -> emit(Result.failure(err)) },
@@ -138,6 +130,20 @@ class UserActionsRepositoryImpl(
                     }
                 )
             }
+        }
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun createAction(action: Actions): Result<Unit> {
+        return withSession(sessionRepository::getCurrent) { session ->
+            storage.insert(UserAction(id = Uuid.random(), action = action), session.user.id)
+        }
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun deleteByAction(action: Actions): Result<Unit> {
+        return withSession(sessionRepository::getCurrent) { session ->
+            storage.deleteByAction(action, session.user.id)
         }
     }
 }

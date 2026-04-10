@@ -6,6 +6,7 @@ import com.diva.models.roles.Role
 import com.diva.models.user.User
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
+import io.github.juevigrace.diva.core.errors.DuplicateKeyException
 import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
 import io.github.juevigrace.diva.database.DivaDatabase
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +41,7 @@ class UserStorageImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
-    override suspend fun insert(item: User): Result<Unit> {
+    private suspend fun insert(item: User): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userQueries.insert(
@@ -66,10 +67,22 @@ class UserStorageImpl(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
-    override suspend fun insertAll(items: List<User>): Result<Unit> {
+    override suspend fun upsert(item: User): Result<Unit> {
+        return insert(item).fold(
+            onFailure = { err ->
+                if (err is DuplicateKeyException) {
+                    update(item)
+                } else {
+                    Result.failure(err)
+                }
+            },
+            onSuccess = { Result.success(Unit) }
+        )
+    }
+
+    override suspend fun upsertAll(items: List<User>): Result<Unit> {
         for (item in items) {
-            val result = insert(item)
+            val result = upsert(item)
             if (result.isFailure) {
                 return result
             }
@@ -78,7 +91,7 @@ class UserStorageImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun update(item: User): Result<Unit> {
+    private suspend fun update(item: User): Result<Unit> {
         return db.use {
             val rows: Long = transactionWithResult {
                 userQueries.update(
@@ -99,16 +112,6 @@ class UserStorageImpl(
                 )
             }
         }
-    }
-
-    override suspend fun updateAll(items: List<User>): Result<Unit> {
-        for (item in items) {
-            val result = update(item)
-            if (result.isFailure) {
-                return result
-            }
-        }
-        return Result.success(Unit)
     }
 
     @OptIn(ExperimentalUuidApi::class)

@@ -11,20 +11,15 @@ import kotlinx.coroutines.launch
 
 interface AppRepository : Repository {
     fun sync(): Flow<Result<Unit>>
-    fun getPreferences(): Flow<Result<UserPreferences>>
-    fun createLocalPreferences(): Flow<Result<Unit>>
+    suspend fun getPreferences(): Result<UserPreferences>
 }
 
 class AppRepositoryImpl(
     private val syncService: SyncService,
     private val prefRepository: UserPreferencesRepository,
 ) : AppRepository {
-    override fun getPreferences(): Flow<Result<UserPreferences>> {
+    override suspend fun getPreferences(): Result<UserPreferences> {
         return prefRepository.getLocalPreferences()
-    }
-
-    override fun createLocalPreferences(): Flow<Result<Unit>> {
-        return prefRepository.createLocalPreferences()
     }
 
     override fun sync(): Flow<Result<Unit>> {

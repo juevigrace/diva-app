@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
 
 interface SyncService : Repository {
     suspend fun sync(): Flow<Result<Unit>>
@@ -20,30 +19,12 @@ class SyncServiceImpl(
     private val uaRepository: UserActionsRepository,
 ) : SyncService {
     override suspend fun sync(): Flow<Result<Unit>> {
-        return withSession(sRepository::getCurrentFlow) { s ->
-            sRepository.ping().collect { result ->
-                result.fold(
-                    onFailure = { err -> emit(Result.failure(err)) },
-                    onSuccess = { _ ->
-                        // TODO: fixes
-                        scope.launch {
-                            umRepository.getMe().collect { result ->
-                                result.onFailure { err -> emit(Result.failure(err)) }
-                            }
-                        }
-
-                        // TODO: user permissions
-
-                        scope.launch {
-                            uaRepository.getActions().collect { result ->
-                                result.onFailure { err -> emit(Result.failure(err)) }
-                            }
-                        }
-
-                        emit(Result.success(Unit))
-                    }
-                )
-            }
+        return withSessionFlow(sRepository::getCurrent) { s ->
+            emit(Result.success(Unit))
+            // TODO: ping server
+            // TODO: fetch user
+            // TODO: fetch user permissions
+            // TODO: fetch user actions
         }.flowOn(Dispatchers.IO)
     }
 }

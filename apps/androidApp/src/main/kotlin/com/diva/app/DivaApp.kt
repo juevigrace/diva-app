@@ -31,7 +31,6 @@ class DivaApp : Application() {
             agent = "Diva/${BuildConfig.VERSION_NAME} (Linux; Android ${Build.VERSION.SDK_INT}; ${Build.MODEL})"
         )
 
-        println(config)
         startKoin {
             modules(appModule(config))
             androidContext(this@DivaApp)

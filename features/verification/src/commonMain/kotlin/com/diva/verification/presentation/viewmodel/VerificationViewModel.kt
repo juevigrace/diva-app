@@ -80,6 +80,7 @@ class VerificationViewModel(
     }
 
     private fun tokenChanged(value: String) {
+        // TODO: fix this input
         val filteredValue = value.filter { it.isDigit() }.take(6)
         formState.update { state -> state.copy(token = filteredValue) }
         formValidationState.update { state -> state.copy(showTokenError = true) }
@@ -110,55 +111,51 @@ class VerificationViewModel(
 
     private fun handlePasswordConfirm() {
         scope.launch {
-            repository.verify(formState.value.token, Actions.PASSWORD_RESET).collect { result ->
-                result.fold(
-                    onFailure = { err ->
-                        toaster.show(err.toToast())
-                        _state.update { state ->
-                            state.copy(
-                                submitLoading = false,
-                                submitSuccess = false,
-                            )
-                        }
-                    },
-                    onSuccess = {
-                        _state.update { state ->
-                            state.copy(
-                                submitLoading = false,
-                                submitSuccess = true
-                            )
-                        }
-                        navigator.pop()
+            repository.verify(formState.value.token, Actions.PASSWORD_RESET).fold(
+                onFailure = { err ->
+                    toaster.show(err.toToast())
+                    _state.update { state ->
+                        state.copy(
+                            submitLoading = false,
+                            submitSuccess = false,
+                        )
                     }
-                )
-            }
+                },
+                onSuccess = {
+                    _state.update { state ->
+                        state.copy(
+                            submitLoading = false,
+                            submitSuccess = true
+                        )
+                    }
+                    navigator.pop()
+                }
+            )
         }
     }
 
     private fun handleUserEmailVerification() {
         scope.launch {
-            repository.verify(formState.value.token, Actions.USER_VERIFICATION).collect { result ->
-                result.fold(
-                    onFailure = { err ->
-                        toaster.show(err.toToast())
-                        _state.update { state ->
-                            state.copy(
-                                submitLoading = false,
-                                submitSuccess = false,
-                            )
-                        }
-                    },
-                    onSuccess = {
-                        _state.update { state ->
-                            state.copy(
-                                submitLoading = false,
-                                submitSuccess = true
-                            )
-                        }
-                        navigator.replaceAll(HomeDestination)
+            repository.verify(formState.value.token, Actions.USER_VERIFICATION).fold(
+                onFailure = { err ->
+                    toaster.show(err.toToast())
+                    _state.update { state ->
+                        state.copy(
+                            submitLoading = false,
+                            submitSuccess = false,
+                        )
                     }
-                )
-            }
+                },
+                onSuccess = {
+                    _state.update { state ->
+                        state.copy(
+                            submitLoading = false,
+                            submitSuccess = true
+                        )
+                    }
+                    navigator.replaceAll(HomeDestination)
+                }
+            )
         }
     }
 
@@ -181,31 +178,27 @@ class VerificationViewModel(
 
     private fun handleRequestPasswordReset(email: String) {
         scope.launch {
-            repository.requestPasswordReset(email).collect { result ->
-                result.fold(
-                    onFailure = { err ->
-                        toaster.show(err.toToast())
-                    },
-                    onSuccess = {
-                        toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
-                    }
-                )
-            }
+            repository.requestPasswordReset(email).fold(
+                onFailure = { err ->
+                    toaster.show(err.toToast())
+                },
+                onSuccess = {
+                    toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
+                }
+            )
         }
     }
 
     private fun handleRequestUserVerification() {
         scope.launch {
-            repository.requestUserVerification().collect { result ->
-                result.fold(
-                    onFailure = { err ->
-                        toaster.show(err.toToast())
-                    },
-                    onSuccess = {
-                        toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
-                    }
-                )
-            }
+            repository.requestUserVerification().fold(
+                onFailure = { err ->
+                    toaster.show(err.toToast())
+                },
+                onSuccess = {
+                    toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
+                }
+            )
         }
     }
 

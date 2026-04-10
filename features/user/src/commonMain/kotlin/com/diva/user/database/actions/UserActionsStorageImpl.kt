@@ -6,6 +6,7 @@ import com.diva.models.actions.Actions
 import com.diva.models.user.actions.UserAction
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
+import io.github.juevigrace.diva.core.errors.DuplicateKeyException
 import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
 import io.github.juevigrace.diva.database.DivaDatabase
 import kotlinx.coroutines.flow.Flow
@@ -74,9 +75,12 @@ class UserActionsStorageImpl(
     override suspend fun insertAll(map: Map<Uuid, List<UserAction>>): Result<Unit> {
         for ((key, value) in map) {
             for (action in value) {
-                val result = insert(action, key)
-                if (result.isFailure) {
-                    return result
+                insert(action, key).onFailure { err ->
+                    if (err is DuplicateKeyException) {
+                        continue
+                    } else {
+                        return Result.failure(err)
+                    }
                 }
             }
         }

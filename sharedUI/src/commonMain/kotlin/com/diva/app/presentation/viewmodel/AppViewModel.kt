@@ -97,45 +97,18 @@ class AppViewModel(
     }
 
     private suspend fun handleGetPreferences() {
-        repository.getPreferences().collect { res ->
-            res.fold(
-                onFailure = { err ->
-                    if (err is ConstraintException) {
-                        println("Creating local preferences: $err")
-                        handleNoLocalPreferences()
-                    } else {
-                        toaster.show(err.toToast())
-                    }
-                },
-                onSuccess = { prefs ->
-                    _state.update { state ->
-                        state.copy(
-                            preferences = prefs,
-                            shouldNavigate = true
-                        )
-                    }
+        repository.getPreferences().fold(
+            onFailure = { err ->
+                toaster.show(err.toToast())
+            },
+            onSuccess = { prefs ->
+                _state.update { state ->
+                    state.copy(
+                        preferences = prefs,
+                        shouldNavigate = true
+                    )
                 }
-            )
-        }
-    }
-
-    private suspend fun handleNoLocalPreferences() {
-        if (_state.value.panic) return
-        repository.createLocalPreferences().collect { res ->
-            res.fold(
-                onFailure = { err ->
-                    toaster.show(err.toToast())
-                    _state.update { state ->
-                        state.copy(
-                            panic = true,
-                            shouldNavigate = false
-                        )
-                    }
-                },
-                onSuccess = {
-                    handleGetPreferences()
-                }
-            )
-        }
+            }
+        )
     }
 }

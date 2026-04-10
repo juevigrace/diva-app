@@ -159,51 +159,51 @@ class SignUpViewModel(
         }
 
         scope.launch {
-            repository.signUp(formState.value).collect { result ->
-                result.fold(
-                    onFailure = { err ->
-                        toaster.show(err.toToast())
-                        _state.update { state ->
-                            state.copy(
-                                submitLoading = false,
-                                submitEnabled = true,
-                                submitSuccess = false,
-                            )
-                        }
-                    },
-                    onSuccess = {
-                        _state.update { state ->
-                            state.copy(
-                                submitLoading = false,
-                                submitSuccess = true
-                            )
-                        }
-                        navigator.replaceAll(HomeDestination)
+            repository.signUp(formState.value).fold(
+                onFailure = { err ->
+                    toaster.show(err.toToast())
+                    _state.update { state ->
+                        state.copy(
+                            submitLoading = false,
+                            submitEnabled = true,
+                            submitSuccess = false,
+                        )
                     }
-                )
-            }
+                },
+                onSuccess = {
+                    _state.update { state ->
+                        state.copy(
+                            submitLoading = false,
+                            submitSuccess = true
+                        )
+                    }
+                    navigator.replaceAll(HomeDestination)
+                }
+            )
         }
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun checkEmailTaken() {
         scope.launch {
-            uRepository.checkEmail(formState.value.email).collect { result ->
-                result.onSuccess { available ->
+            uRepository.checkEmail(formState.value.email).fold(
+                onFailure = { err -> toaster.show(err.toToast()) },
+                onSuccess = { available ->
                     formState.update { it.copy(isEmailTaken = !available) }
                 }
-            }
+            )
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     private fun checkUsernameTaken() {
         scope.launch {
-            uRepository.checkUsername(formState.value.username).collect { result ->
-                result.onSuccess { available ->
+            uRepository.checkUsername(formState.value.username).fold(
+                onFailure = { err -> toaster.show(err.toToast()) },
+                onSuccess = { available ->
                     formState.update { it.copy(isUsernameTaken = !available) }
                 }
-            }
+            )
         }
     }
 }
