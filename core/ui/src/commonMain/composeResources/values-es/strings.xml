@@ -53,6 +53,7 @@
     <string name="verification">Verficación</string>
     <string name="session_expired">Sesión expirada</string>
     <string name="email_sent">Correo enviado</string>
+    <string name="token">Token</string>
     <!--PLACEHOLDERS-->
     <string name="email_placeholder">ejemplo@correo.com</string>
     <string name="username_placeholder">juan123</string>
@@ -61,13 +62,11 @@
     <string name="password_placeholder">••••••••</string>
     <string name="confirm_password_placeholder">••••••••</string>
     <!--VALIDATION-->
-    <string name="field_required">Este campo es obligatorio</string>
-    <string name="invalid_phone_number">El teléfono debe contener solo números</string>
-    <string name="username_too_short">El usuario debe tener al menos 3 caracteres</string>
-    <string name="invalid_email">Por favor ingresa un correo válido</string>
-    <string name="email_taken">El correo ya está en uso</string>
-    <string name="username_taken">El usuario ya está en uso</string>
-    <string name="password_too_short">La contraseña debe tener al menos 4 caracteres</string>
+    <string name="field_required">%1$s es obligatorio</string>
+    <string name="field_min_length">%1$s debe tener al menos %2$d caracteres</string>
+    <string name="field_invalid">%1$s debe ser un %2$s válido</string>
+    <string name="field_already_taken">%1$s ya está en uso</string>
+    <string name="field_numbers_only">%1$s debe contener solo números</string>
     <string name="terms_required">Debes aceptar los Términos y Condiciones</string>
     <string name="privacy_required">Debes aceptar la Política de Privacidad</string>
     <!--ERRORS-->

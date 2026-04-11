@@ -1,11 +1,8 @@
 package com.diva.ui.components.input
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -17,18 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
-import com.diva.core.ui.resources.Res
-import com.diva.core.ui.resources.hide_text
-import com.diva.core.ui.resources.ic_eye
-import com.diva.core.ui.resources.ic_eye_off
-import com.diva.core.ui.resources.show_text
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -53,8 +41,8 @@ fun LocalTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     enabled: Boolean = true,
     readOnly: Boolean = false,
-    debounceMillis: Long = 300L
-){
+    debounceMillis: Long = 200L
+) {
     var hasBeenChanged by remember { mutableStateOf(false) }
     var localValue by remember { mutableStateOf(value) }
 

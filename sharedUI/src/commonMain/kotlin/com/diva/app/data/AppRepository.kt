@@ -1,5 +1,6 @@
 package com.diva.app.data
 
+import com.diva.auth.session.data.SessionRepository
 import com.diva.models.Repository
 import com.diva.models.user.preferences.UserPreferences
 import com.diva.services.SyncService
@@ -11,15 +12,21 @@ import kotlinx.coroutines.launch
 
 interface AppRepository : Repository {
     fun sync(): Flow<Result<Unit>>
+    suspend fun ping(): Result<Unit>
     suspend fun getPreferences(): Result<UserPreferences>
 }
 
 class AppRepositoryImpl(
     private val syncService: SyncService,
-    private val prefRepository: UserPreferencesRepository,
+    private val pRepo: UserPreferencesRepository,
+    private val sRepo: SessionRepository,
 ) : AppRepository {
     override suspend fun getPreferences(): Result<UserPreferences> {
-        return prefRepository.getLocalPreferences()
+        return pRepo.getLocalPreferences()
+    }
+
+    override suspend fun ping(): Result<Unit> {
+        return sRepo.ping()
     }
 
     override fun sync(): Flow<Result<Unit>> {

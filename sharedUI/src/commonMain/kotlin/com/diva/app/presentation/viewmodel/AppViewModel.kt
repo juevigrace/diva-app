@@ -10,7 +10,6 @@ import com.diva.ui.navigation.HomeDestination
 import com.diva.ui.navigation.OnboardingDestination
 import com.diva.ui.navigation.SignInDestination
 import io.github.juevigrace.diva.core.errors.ConstraintException
-import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.ToastMessage
 import io.github.juevigrace.diva.ui.toast.Toaster
@@ -35,7 +34,7 @@ class AppViewModel(
                 handleGetPreferences()
             }
             launch {
-                handleSync()
+                handleSession()
             }
         }
     }
@@ -53,49 +52,6 @@ class AppViewModel(
         }
     }
 
-    private suspend fun handleSync() {
-        _state.update { state ->
-            state.copy(
-                sessionLoading = true,
-                sessionSuccess = false
-            )
-        }
-        repository.sync().collect { result ->
-            result.fold(
-                onFailure = { err ->
-                    println(err)
-                    if (err is ConstraintException && err.field == "session") {
-                        _state.update { state ->
-                            state.copy(
-                                sessionLoading = false,
-                                sessionSuccess = false
-                            )
-                        }
-
-                        if (err.constraint == "expired") {
-                            toaster.show(
-                                ToastMessage(
-                                    message = getString(Res.string.session_expired),
-                                    isError = true,
-                                )
-                            )
-                        }
-                    } else {
-                        toaster.show(err.toToast())
-                    }
-                },
-                onSuccess = {
-                    _state.update { state ->
-                        state.copy(
-                            sessionLoading = false,
-                            sessionSuccess = true
-                        )
-                    }
-                }
-            )
-        }
-    }
-
     private suspend fun handleGetPreferences() {
         repository.getPreferences().fold(
             onFailure = { err ->
@@ -106,6 +62,46 @@ class AppViewModel(
                     state.copy(
                         preferences = prefs,
                         shouldNavigate = true
+                    )
+                }
+            }
+        )
+    }
+
+    private suspend fun handleSession() {
+        _state.update { state ->
+            state.copy(
+                sessionLoading = true,
+                sessionSuccess = false
+            )
+        }
+        repository.ping().fold(
+            onFailure = { err ->
+                if (err is ConstraintException && err.field == "session") {
+                    _state.update { state ->
+                        state.copy(
+                            sessionLoading = false,
+                            sessionSuccess = false
+                        )
+                    }
+
+                    if (err.constraint == "expired") {
+                        toaster.show(
+                            ToastMessage(
+                                message = getString(Res.string.session_expired),
+                                isError = true,
+                            )
+                        )
+                    }
+                } else {
+                    toaster.show(err.toToast())
+                }
+            },
+            onSuccess = {
+                _state.update { state ->
+                    state.copy(
+                        sessionLoading = false,
+                        sessionSuccess = true
                     )
                 }
             }

@@ -1,24 +1,29 @@
 package com.diva.auth.signUp.data.validation
 
 import com.diva.core.ui.resources.Res
-import com.diva.core.ui.resources.email_taken
+import com.diva.core.ui.resources.confirm_password
+import com.diva.core.ui.resources.email
+import com.diva.core.ui.resources.field_already_taken
+import com.diva.core.ui.resources.field_invalid
+import com.diva.core.ui.resources.field_min_length
 import com.diva.core.ui.resources.field_required
-import com.diva.core.ui.resources.invalid_email
+import com.diva.core.ui.resources.password
 import com.diva.core.ui.resources.password_mismatch
-import com.diva.core.ui.resources.password_too_short
 import com.diva.core.ui.resources.privacy_required
 import com.diva.core.ui.resources.terms_required
-import com.diva.core.ui.resources.username_taken
-import com.diva.core.ui.resources.username_too_short
+import com.diva.core.ui.resources.username
 import com.diva.models.auth.SignUpForm
 import com.diva.models.validation.EmailValidation
 import com.diva.models.validation.UsernameValidation
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.validation.ValidationResult
 import io.github.juevigrace.diva.core.validation.Validator
-import org.jetbrains.compose.resources.StringResource
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 
 object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
+    const val PASSWORD_MIN_LENGTH = 4
+
     override fun validate(form: SignUpForm): SignUpValidation {
         return SignUpValidation(
             emailError = validateEmail(form.email, form.isEmailTaken),
@@ -30,16 +35,26 @@ object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
         )
     }
 
-    private fun validateEmail(email: String, isTaken: Boolean = false): Option<StringResource> {
+    private fun validateEmail(email: String, isTaken: Boolean = false): Option<String> {
+        val fieldName = Res.string.email
         return when {
             email.isBlank() -> {
-                Option.Some(Res.string.field_required)
+                val value = runBlocking {
+                    getString(Res.string.field_required, getString(fieldName))
+                }
+                Option.Some(value)
             }
             !EmailValidation.isValid(email) -> {
-                Option.Some(Res.string.invalid_email)
+                val value = runBlocking {
+                    getString(Res.string.field_invalid, getString(fieldName), getString(fieldName).lowercase())
+                }
+                Option.Some(value)
             }
             isTaken -> {
-                Option.Some(Res.string.email_taken)
+                val value = runBlocking {
+                    getString(Res.string.field_already_taken, getString(fieldName))
+                }
+                Option.Some(value)
             }
             else -> {
                 Option.None
@@ -47,16 +62,26 @@ object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
         }
     }
 
-    private fun validateUsername(username: String, isTaken: Boolean): Option<StringResource> {
+    private fun validateUsername(username: String, isTaken: Boolean): Option<String> {
+        val fieldName = Res.string.username
         return when {
             username.isBlank() -> {
-                Option.Some(Res.string.field_required)
+                val value = runBlocking {
+                    getString(Res.string.field_required, getString(fieldName))
+                }
+                Option.Some(value)
             }
             !UsernameValidation.isValid(username) -> {
-                Option.Some(Res.string.username_too_short)
+                val value = runBlocking {
+                    getString(Res.string.field_min_length, getString(fieldName), UsernameValidation.MIN_LENGTH)
+                }
+                Option.Some(value)
             }
             isTaken -> {
-                Option.Some(Res.string.username_taken)
+                val value = runBlocking {
+                    getString(Res.string.field_already_taken, getString(fieldName))
+                }
+                Option.Some(value)
             }
             else -> {
                 Option.None
@@ -64,37 +89,65 @@ object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
         }
     }
 
-    private fun validatePassword(password: String): Option<StringResource> {
-        return if (password.isBlank()) {
-            Option.Some(Res.string.field_required)
-        } else if (password.length < 4) {
-            Option.Some(Res.string.password_too_short)
-        } else {
-            Option.None
+    private fun validatePassword(password: String): Option<String> {
+        val fieldName = Res.string.password
+        return when {
+            password.isBlank() -> {
+                val value = runBlocking {
+                    getString(Res.string.field_required, getString(fieldName))
+                }
+                Option.Some(value)
+            }
+            password.length < PASSWORD_MIN_LENGTH -> {
+                val value = runBlocking {
+                    getString(Res.string.field_min_length, getString(fieldName), PASSWORD_MIN_LENGTH)
+                }
+                Option.Some(value)
+            }
+            else -> {
+                Option.None
+            }
         }
     }
 
-    private fun validateConfirmPassword(password: String, confirmPassword: String): Option<StringResource> {
-        return if (confirmPassword.isBlank()) {
-            Option.Some(Res.string.field_required)
-        } else if (password != confirmPassword) {
-            Option.Some(Res.string.password_mismatch)
-        } else {
-            Option.None
+    private fun validateConfirmPassword(password: String, confirmPassword: String): Option<String> {
+        val fieldName = Res.string.confirm_password
+        return when {
+            confirmPassword.isBlank() -> {
+                val value = runBlocking {
+                    getString(Res.string.field_required, getString(fieldName))
+                }
+                Option.Some(value)
+            }
+            password != confirmPassword -> {
+                val value = runBlocking {
+                    getString(Res.string.password_mismatch)
+                }
+                Option.Some(value)
+            }
+            else -> {
+                Option.None
+            }
         }
     }
 
-    private fun validateTerms(accepted: Boolean): Option<StringResource> {
+    private fun validateTerms(accepted: Boolean): Option<String> {
         return if (!accepted) {
-            Option.Some(Res.string.terms_required)
+            val value = runBlocking {
+                getString(Res.string.terms_required)
+            }
+            Option.Some(value)
         } else {
             Option.None
         }
     }
 
-    private fun validatePrivacy(accepted: Boolean): Option<StringResource> {
+    private fun validatePrivacy(accepted: Boolean): Option<String> {
         return if (!accepted) {
-            Option.Some(Res.string.privacy_required)
+            val value = runBlocking {
+                getString(Res.string.privacy_required)
+            }
+            Option.Some(value)
         } else {
             Option.None
         }
@@ -102,17 +155,17 @@ object SignUpValidator : Validator<SignUpForm, SignUpValidation> {
 }
 
 data class SignUpValidation(
-    val emailError: Option<StringResource> = Option.None,
+    val emailError: Option<String> = Option.None,
     val showEmailError: Boolean = false,
-    val usernameError: Option<StringResource> = Option.None,
+    val usernameError: Option<String> = Option.None,
     val showUsernameError: Boolean = false,
-    val passwordError: Option<StringResource> = Option.None,
+    val passwordError: Option<String> = Option.None,
     val showPasswordError: Boolean = false,
-    val confirmPasswordError: Option<StringResource> = Option.None,
+    val confirmPasswordError: Option<String> = Option.None,
     val showConfirmPasswordError: Boolean = false,
-    val termsError: Option<StringResource> = Option.None,
+    val termsError: Option<String> = Option.None,
     val showTermsError: Boolean = false,
-    val privacyPolicyError: Option<StringResource> = Option.None,
+    val privacyPolicyError: Option<String> = Option.None,
     val showPrivacyPolicyError: Boolean = false,
 ) : ValidationResult {
     override val hasErrors: Boolean = showEmailError &&

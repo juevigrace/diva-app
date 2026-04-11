@@ -80,9 +80,7 @@ class VerificationViewModel(
     }
 
     private fun tokenChanged(value: String) {
-        // TODO: fix this input
-        val filteredValue = value.filter { it.isDigit() }.take(6)
-        formState.update { state -> state.copy(token = filteredValue) }
+        formState.update { state -> state.copy(token = value) }
         formValidationState.update { state -> state.copy(showTokenError = true) }
     }
 

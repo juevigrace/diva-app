@@ -2,11 +2,14 @@ package com.diva.verification.presentation.ui.components
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.diva.core.ui.resources.Res
 import com.diva.core.ui.resources.verification_code
@@ -24,6 +27,7 @@ fun ColumnScope.VerifyTokenSection(
     state: VerificationState,
     onEvent: (VerificationEvents) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     Text(
         text = stringResource(Res.string.verification_code_description),
         style = MaterialTheme.typography.bodyLarge,
@@ -38,12 +42,21 @@ fun ColumnScope.VerifyTokenSection(
         placeholder = stringResource(Res.string.verification_code_placeholder),
         supportingText = when (val text = state.formValidation.tokenError) {
             Option.None -> null
-            is Option.Some -> stringResource(text.value)
+            is Option.Some -> text.value
         },
         isError = state.formValidation.tokenError.isPresent(),
         singleLine = true,
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                focusManager.clearFocus()
+                if (state.submitEnabled) {
+                    onEvent(VerificationEvents.OnSubmit)
+                }
+            }
         )
     )
 }

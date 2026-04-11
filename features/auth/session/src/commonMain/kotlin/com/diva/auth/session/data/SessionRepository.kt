@@ -8,6 +8,7 @@ import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.errors.HttpException
 import io.github.juevigrace.diva.core.fold
+import io.github.juevigrace.diva.core.getOrElse
 import io.github.juevigrace.diva.core.isEmpty
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
@@ -103,6 +104,14 @@ class SessionRepositoryImpl(
     override suspend fun logout(): Result<Unit> {
         return withSession(::getCurrent) { session ->
             api.signOut(session.accessToken).onFailure { err ->
+                if (err is HttpException &&
+                    err.statusCode.getOrElse {
+                        HttpStatusCode.InternalServerError
+                    } == HttpStatusCode.Unauthorized.value
+                ) {
+                    return@onFailure
+                }
+
                 return@withSession Result.failure(err)
             }
 

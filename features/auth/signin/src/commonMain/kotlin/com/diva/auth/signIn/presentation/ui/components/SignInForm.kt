@@ -17,7 +17,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -73,7 +72,7 @@ fun SignInForm(
             placeholder = stringResource(Res.string.email_placeholder),
             supportingText = when (val text = state.formValidation.usernameError) {
                 Option.None -> null
-                is Option.Some -> stringResource(text.value)
+                is Option.Some -> text.value
             },
             leadingIcon = {
                 Icon(
@@ -114,7 +113,7 @@ fun SignInForm(
                 },
                 supportingText = when (val text = state.formValidation.passwordError) {
                     Option.None -> null
-                    is Option.Some -> stringResource(text.value)
+                    is Option.Some -> text.value
                 },
                 isError = state.formValidation.passwordError.isPresent(),
                 keyboardOptions = KeyboardOptions(

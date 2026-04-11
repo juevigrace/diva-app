@@ -1,8 +1,10 @@
 package com.diva.app.presentation.ui.screen
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import com.diva.app.home.presentation.ui.components.navigation.homeEntries
@@ -15,6 +17,7 @@ import com.diva.ui.theme.AppTypography
 import com.diva.ui.theme.darkScheme
 import com.diva.ui.theme.lightScheme
 import com.diva.verification.presentation.ui.components.navigation.verificationEntries
+import io.github.juevigrace.diva.ui.components.layout.Screen
 import io.github.juevigrace.diva.ui.components.navigation.Navigator
 import io.github.juevigrace.diva.ui.components.toaster.LocalToaster
 import io.github.juevigrace.diva.ui.components.wrappers.DivaApp
@@ -51,14 +54,19 @@ fun App() {
             typography = AppTypography
         )
     ) {
-        Navigator(
-            navigator = navigator,
-            entryProvider = entryProvider {
-                onboardingEntries()
-                authEntries()
-                homeEntries()
-                verificationEntries()
-            }
-        )
+        Screen(
+            snackBarHost = { Toaster() }
+        ) { innerPadding ->
+            Navigator(
+                modifier = Modifier.padding(innerPadding),
+                navigator = navigator,
+                entryProvider = entryProvider {
+                    onboardingEntries()
+                    authEntries()
+                    homeEntries()
+                    verificationEntries()
+                }
+            )
+        }
     }
 }

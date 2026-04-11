@@ -83,7 +83,7 @@ fun SignUpForm(
             placeholder = stringResource(Res.string.email_placeholder),
             supportingText = when (val text = state.formValidation.emailError) {
                 Option.None -> null
-                is Option.Some -> stringResource(text.value)
+                is Option.Some -> text.value
             },
             leadingIcon = {
                 Icon(
@@ -121,7 +121,7 @@ fun SignUpForm(
             },
             supportingText = when (val text = state.formValidation.usernameError) {
                 Option.None -> null
-                is Option.Some -> stringResource(text.value)
+                is Option.Some -> text.value
             },
             isError = state.formValidation.usernameError.isPresent(),
             singleLine = true,
@@ -151,7 +151,7 @@ fun SignUpForm(
             },
             supportingText = when (val text = state.formValidation.passwordError) {
                 Option.None -> null
-                is Option.Some -> stringResource(text.value)
+                is Option.Some -> text.value
             },
             isError = state.formValidation.passwordError.isPresent(),
             keyboardOptions = KeyboardOptions(
@@ -180,7 +180,7 @@ fun SignUpForm(
             },
             supportingText = when (val text = state.formValidation.confirmPasswordError) {
                 Option.None -> null
-                is Option.Some -> stringResource(text.value)
+                is Option.Some -> text.value
             },
             isError = state.formValidation.confirmPasswordError.isPresent(),
             keyboardOptions = KeyboardOptions(

@@ -8,11 +8,16 @@ import com.diva.models.api.user.dtos.UpdateUserDto
 import com.diva.models.user.User
 import com.diva.user.api.client.me.UserMeApi
 import io.github.juevigrace.diva.core.fold
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
+import kotlin.fold
 import kotlin.uuid.ExperimentalUuidApi
 
 interface UserMeRepository : Repository {
-    suspend fun getMe(): Flow<Result<User>>
+    fun getMe(): Flow<Result<User>>
     suspend fun updateMe(user: User): Result<Unit>
     suspend fun deleteMe(): Result<Unit>
     suspend fun updateEmail(email: String): Result<Unit>
@@ -25,31 +30,47 @@ class UserMeRepositoryImpl(
 ) : UserMeRepository {
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun getMe(): Flow<Result<User>> {
-        return withSessionFlow(sessionRepository::getCurrent) { session ->
-            val fetch = fetchUser(session.accessToken)
-            storage.getByIdFlow(session.user.id).collect { res ->
-                res.fold(
-                    onFailure = { err -> emit(Result.failure(err)) },
-                    onSuccess = { option ->
-                        option.fold(
-                            onNone = {
-                                fetch.onFailure { err -> emit(Result.failure(err)) }
-                            },
-                            onSome = { user -> emit(Result.success(user)) }
+    override fun getMe(): Flow<Result<User>> {
+        return callbackFlow {
+            val fetchJob = scope.launch(start = CoroutineStart.LAZY) {
+                fetchUser().onFailure { err ->
+                    trySend(Result.failure(err))
+                }
+            }
+
+            val dbJob = scope.launch {
+                withSessionFlow(sessionRepository::getCurrent) { s ->
+                    storage.getByIdFlow(s.user.id).collect { res ->
+                        res.fold(
+                            onFailure = { err -> emit(Result.failure(err)) },
+                            onSuccess = { opt ->
+                                opt.fold(
+                                    onNone = { fetchJob.join() },
+                                    onSome = { user -> emit(Result.success(user)) }
+                                )
+                            }
                         )
                     }
-                )
-                fetch.onFailure { err -> emit(Result.failure(err)) }
+                }.collect { res -> trySend(res) }
+            }
+
+            if (!fetchJob.isCompleted) fetchJob.start()
+
+            awaitClose {
+                dbJob.cancel()
+                fetchJob.cancel()
             }
         }
     }
 
-    private suspend fun fetchUser(token: String): Result<Unit> {
-        return userMeClient.getMe(token).fold(
-            onFailure = { err -> Result.failure(err) },
-            onSuccess = { res -> storage.upsert(User.fromResponse(res)) }
-        )
+    @OptIn(ExperimentalUuidApi::class)
+    private suspend fun fetchUser(): Result<Unit> {
+        return withSession(sessionRepository::getCurrent) { s ->
+            userMeClient.getMe(s.accessToken).fold(
+                onFailure = { err -> Result.failure(err) },
+                onSuccess = { res -> storage.upsert(User.fromResponse(res)) }
+            )
+        }
     }
 
     override suspend fun updateMe(user: User): Result<Unit> {

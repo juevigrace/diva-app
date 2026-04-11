@@ -14,7 +14,9 @@ import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.fold
 
 class HomeViewModel(
     private val repository: HomeRepository,
@@ -24,26 +26,52 @@ class HomeViewModel(
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
-    fun onEvent(event: HomeEvents) {
-        when (event) {
-            HomeEvents.OnActions -> handleActions()
+    init {
+        scope.launch {
+            launch {
+                handleActions()
+            }
+            launch {
+                handleUser()
+            }
         }
     }
 
-    private fun handleActions() {
-        scope.launch {
-            repository.getActions().collect { result ->
-                result.fold(
-                    onFailure = { err ->
-                        toaster.show(err.toToast())
-                    },
-                    onSuccess = { actions ->
-                        actions[Actions.USER_VERIFICATION]?.let {
-                            navigator.replaceAll(VerificationDestination(VerificationAction.UserVerification))
-                        }
+    fun onEvent(event: HomeEvents) {
+        when (event) {
+            else -> {}
+        }
+    }
+
+    private suspend fun handleActions() {
+        repository.getActions().collect { result ->
+            result.fold(
+                onFailure = { err ->
+                    toaster.show(err.toToast())
+                },
+                onSuccess = { actions ->
+                    actions[Actions.USER_VERIFICATION]?.let {
+                        navigator.replaceAll(VerificationDestination(VerificationAction.UserVerification))
                     }
-                )
-            }
+                }
+            )
+        }
+    }
+
+    private suspend fun handleUser() {
+        repository.getMe().collect { result ->
+            result.fold(
+                onFailure = { err ->
+                    toaster.show(err.toToast())
+                },
+                onSuccess = { user ->
+                    _state.update { state ->
+                        state.copy(
+                            user = user
+                        )
+                    }
+                }
+            )
         }
     }
 }

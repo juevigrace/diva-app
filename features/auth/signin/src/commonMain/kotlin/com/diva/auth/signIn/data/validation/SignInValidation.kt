@@ -2,11 +2,14 @@ package com.diva.auth.signIn.data.validation
 
 import com.diva.core.ui.resources.Res
 import com.diva.core.ui.resources.field_required
+import com.diva.core.ui.resources.password
+import com.diva.core.ui.resources.username
 import com.diva.models.auth.SignInForm
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.validation.ValidationResult
 import io.github.juevigrace.diva.core.validation.Validator
-import org.jetbrains.compose.resources.StringResource
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 
 object SignInValidator : Validator<SignInForm, SignInValidation> {
     override fun validate(form: SignInForm): SignInValidation {
@@ -16,27 +19,36 @@ object SignInValidator : Validator<SignInForm, SignInValidation> {
         )
     }
 
-    private fun validateUsername(username: String): Option<StringResource> {
-        return if (username.isBlank()) {
-            Option.Some(Res.string.field_required)
-        } else {
-            Option.None
+    private fun validateUsername(username: String): Option<String> {
+        return when {
+            username.isBlank() -> {
+                val value = runBlocking {
+                    getString(Res.string.field_required, getString(Res.string.username))
+                }
+                Option.Some(value)
+            }
+            else -> {
+                Option.None
+            }
         }
     }
 
-    private fun validatePassword(password: String): Option<StringResource> {
-        return if (password.isBlank()) {
-            Option.Some(Res.string.field_required)
+    private fun validatePassword(password: String): Option<String> {
+        if (password.isBlank()) {
+            val value = runBlocking {
+                getString(Res.string.field_required, getString(Res.string.password))
+            }
+            return Option.Some(value)
         } else {
-            Option.None
+            return Option.None
         }
     }
 }
 
 data class SignInValidation(
-    val usernameError: Option<StringResource> = Option.None,
+    val usernameError: Option<String> = Option.None,
     val showUsernameError: Boolean = false,
-    val passwordError: Option<StringResource> = Option.None,
+    val passwordError: Option<String> = Option.None,
     val showPasswordError: Boolean = false,
 ) : ValidationResult {
     override val hasErrors: Boolean = showUsernameError && showPasswordError

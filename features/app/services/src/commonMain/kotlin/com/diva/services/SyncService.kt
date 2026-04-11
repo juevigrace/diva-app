@@ -7,10 +7,15 @@ import com.diva.user.data.me.UserMeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 
+data class SyncState(
+    val shouldPing: Boolean = false,
+)
+
 interface SyncService : Repository {
-    suspend fun sync(): Flow<Result<Unit>>
+    fun sync(): Flow<Result<Unit>>
 }
 
 class SyncServiceImpl(
@@ -18,13 +23,20 @@ class SyncServiceImpl(
     private val umRepository: UserMeRepository,
     private val uaRepository: UserActionsRepository,
 ) : SyncService {
-    override suspend fun sync(): Flow<Result<Unit>> {
-        return withSessionFlow(sRepository::getCurrent) { s ->
-            emit(Result.success(Unit))
-            // TODO: ping server
+    private val state = MutableStateFlow(SyncState())
+
+    override fun sync(): Flow<Result<Unit>> {
+        return withSessionObserve(sRepository::observeCurrent) { s ->
+            if (state.value.shouldPing) {
+                sRepository.ping().onFailure { err ->
+                    return@withSessionObserve emit(Result.failure(err))
+                }
+            }
+
             // TODO: fetch user
             // TODO: fetch user permissions
             // TODO: fetch user actions
+            emit(Result.success(Unit))
         }.flowOn(Dispatchers.IO)
     }
 }
