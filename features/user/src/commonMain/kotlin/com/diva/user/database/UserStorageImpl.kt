@@ -6,8 +6,10 @@ import com.diva.models.roles.Role
 import com.diva.models.user.User
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
+import io.github.juevigrace.diva.core.errors.ConstraintViolationException
 import io.github.juevigrace.diva.core.errors.DuplicateKeyException
 import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
+import io.github.juevigrace.diva.core.getOrElse
 import io.github.juevigrace.diva.database.DivaDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.ExperimentalTime
@@ -57,8 +59,7 @@ class UserStorageImpl(
                 )
             }
             if (rows.toInt() == 0) {
-                throw
-                NoRowsAffectedException(
+                throw NoRowsAffectedException(
                     operation = Option.of(DatabaseOperation.INSERT),
                     table = Option.Some("diva_user"),
                     details = Option.Some("Failed to insert")
@@ -70,7 +71,7 @@ class UserStorageImpl(
     override suspend fun upsert(item: User): Result<Unit> {
         return insert(item).fold(
             onFailure = { err ->
-                if (err is DuplicateKeyException) {
+                if (err is DuplicateKeyException || err is ConstraintViolationException) {
                     update(item)
                 } else {
                     Result.failure(err)
@@ -97,15 +98,20 @@ class UserStorageImpl(
                 userQueries.update(
                     email = item.email,
                     username = item.username,
+                    phone_number = item.phoneNumber,
+                    birth_date = item.birthDate.toEpochMilliseconds(),
+                    user_verified = item.userVerified,
+                    role = item.role,
+                    updated_at = item.updatedAt.toEpochMilliseconds(),
+                    deleted_at = item.deletedAt.getOrElse { null }?.toEpochMilliseconds(),
                     alias = item.alias,
                     avatar = item.avatar,
                     bio = item.bio,
-                    id = item.id.toString()
+                    id = item.id.toString(),
                 )
             }
             if (rows.toInt() == 0) {
-                throw
-                NoRowsAffectedException(
+                throw NoRowsAffectedException(
                     operation = Option.of(DatabaseOperation.UPDATE),
                     table = Option.Some("diva_user"),
                     details = Option.Some("Failed to update")
@@ -121,8 +127,7 @@ class UserStorageImpl(
                 userQueries.deleteById(id.toString())
             }
             if (rows.toInt() == 0) {
-                throw
-                NoRowsAffectedException(
+                throw NoRowsAffectedException(
                     operation = Option.of(DatabaseOperation.DELETE),
                     table = Option.Some("diva_user"),
                     details = Option.Some("Failed to delete")
@@ -138,8 +143,7 @@ class UserStorageImpl(
                 userQueries.deleteAll()
             }
             if (rows.toInt() == 0) {
-                throw
-                NoRowsAffectedException(
+                throw NoRowsAffectedException(
                     operation = Option.of(DatabaseOperation.DELETE),
                     table = Option.Some("diva_user"),
                     details = Option.Some("Failed to delete")

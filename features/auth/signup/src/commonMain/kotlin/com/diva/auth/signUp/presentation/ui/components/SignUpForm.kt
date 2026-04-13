@@ -197,7 +197,7 @@ fun SignUpForm(
                 .fillMaxWidth()
                 .clip(CircleShape)
                 .clickable(
-                    onClick = { onEvent(SignUpEvents.TogglePrivacyPolicy) },
+                    onClick = { onEvent(SignUpEvents.ToggleTerms) },
                     role = Role.Button
                 )
                 .padding(2.dp),

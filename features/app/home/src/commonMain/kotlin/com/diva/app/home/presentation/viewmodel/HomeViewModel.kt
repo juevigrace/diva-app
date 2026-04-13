@@ -8,7 +8,6 @@ import com.diva.ui.messages.toToast
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.VerificationDestination
 import com.diva.ui.navigation.arguments.VerificationAction
-import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.fold
 
 class HomeViewModel(
     private val repository: HomeRepository,
@@ -26,20 +24,23 @@ class HomeViewModel(
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
-    init {
+    fun onEvent(event: HomeEvents) {
+        when (event) {
+            HomeEvents.OnRender -> init()
+        }
+    }
+
+    private fun init() {
         scope.launch {
+            launch {
+                handleUser()
+            }
             launch {
                 handleActions()
             }
             launch {
-                handleUser()
+                updatePreferences()
             }
-        }
-    }
-
-    fun onEvent(event: HomeEvents) {
-        when (event) {
-            else -> {}
         }
     }
 
@@ -55,6 +56,12 @@ class HomeViewModel(
                     }
                 }
             )
+        }
+    }
+
+    private suspend fun updatePreferences() {
+        repository.updatePreferences().onFailure { err ->
+            toaster.show(err.toToast())
         }
     }
 

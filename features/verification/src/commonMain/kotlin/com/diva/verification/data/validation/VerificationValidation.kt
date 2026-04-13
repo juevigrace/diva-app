@@ -30,7 +30,7 @@ object VerificationValidator : Validator<VerificationForm, VerificationValidatio
                 }
                 Option.Some(value)
             }
-            !token.any { it.isDigit() } -> {
+            !token.all { it.isDigit() } -> {
                 val value = runBlocking {
                     getString(Res.string.field_numbers_only, getString(fieldName))
                 }

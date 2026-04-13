@@ -6,6 +6,7 @@ import com.diva.models.actions.Actions
 import com.diva.models.user.actions.UserAction
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
+import io.github.juevigrace.diva.core.errors.ConstraintViolationException
 import io.github.juevigrace.diva.core.errors.DuplicateKeyException
 import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
 import io.github.juevigrace.diva.database.DivaDatabase
@@ -76,7 +77,7 @@ class UserActionsStorageImpl(
         for ((key, value) in map) {
             for (action in value) {
                 insert(action, key).onFailure { err ->
-                    if (err is DuplicateKeyException) {
+                    if (err is DuplicateKeyException || err is ConstraintViolationException) {
                         continue
                     } else {
                         return Result.failure(err)
@@ -92,28 +93,6 @@ class UserActionsStorageImpl(
         return db.use {
             val rows: Long = transactionWithResult {
                 userActionsQueries.deleteById(id.toString())
-            }
-            if (rows.toInt() == 0) {
-                throw NoRowsAffectedException(
-                    operation = Option.of(DatabaseOperation.DELETE),
-                    table = Option.Some("diva_user_pending_actions"),
-                    details = Option.Some("Failed to delete")
-                )
-            }
-        }
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    override suspend fun deleteByAction(
-        action: Actions,
-        userId: Uuid
-    ): Result<Unit> {
-        return db.use {
-            val rows: Long = transactionWithResult {
-                userActionsQueries.deleteByAction(
-                    user_id = userId.toString(),
-                    action_name = action
-                )
             }
             if (rows.toInt() == 0) {
                 throw NoRowsAffectedException(

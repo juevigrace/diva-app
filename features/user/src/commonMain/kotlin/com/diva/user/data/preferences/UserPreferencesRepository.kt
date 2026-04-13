@@ -78,15 +78,37 @@ class UserPreferencesRepositoryImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun createCloudPreferences(prefs: UserPreferences): Result<Unit> {
-        TODO()
+        return withSession(sessionRepository::getCurrent) { s ->
+            client.createPreferences(prefs.toPreferenceDto(), s.accessToken)
+        }
     }
 
     override suspend fun updatePreferences(prefs: UserPreferences): Result<Unit> {
-        TODO()
+        return withSession(sessionRepository::getCurrent) { s ->
+            client.updatePreferences(prefs.toPreferenceDto(), s.accessToken)
+        }
     }
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun updateLocalPrefUserId(): Result<Unit> {
-        TODO()
+        return withSession(sessionRepository::getCurrent) { session ->
+            storage.getByUser(session.user.id).fold(
+                onFailure = { err -> Result.failure(err) },
+                onSuccess = { opt ->
+                    opt.fold(
+                        onNone = {
+                            Result.failure(
+                                ConstraintException(
+                                    field = "preferences",
+                                    constraint = "missing",
+                                    value = "null"
+                                )
+                            )
+                        },
+                        onSome = { prefs -> storage.updateUserId(prefs.id, session.user.id) }
+                    )
+                }
+            )
+        }
     }
 }

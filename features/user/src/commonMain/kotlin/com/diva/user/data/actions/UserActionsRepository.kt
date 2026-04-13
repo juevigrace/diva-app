@@ -21,7 +21,7 @@ import kotlin.uuid.Uuid
 
 interface UserActionsRepository : Repository {
     fun getActions(): Flow<Result<Map<Actions, UserAction>>>
-    suspend fun getAction(action: Actions): Result<Actions>
+    suspend fun getAction(action: Actions): Result<UserAction>
     fun syncActions(): Flow<Result<Unit>>
     suspend fun createAction(action: Actions): Result<Unit>
     suspend fun deleteByAction(action: Actions): Result<Unit>
@@ -76,10 +76,7 @@ class UserActionsRepositoryImpl(
                             id = Uuid.parse(actionRes.id),
                             action = action
                         )
-                        storage.deleteByAction(
-                            action = uAction.action,
-                            userId = session.user.id,
-                        )
+                        storage.delete(uAction.id)
                         uAction
                     }
 
@@ -90,7 +87,7 @@ class UserActionsRepositoryImpl(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun getAction(action: Actions): Result<Actions> {
+    override suspend fun getAction(action: Actions): Result<UserAction> {
         return withSession(sRepo::getCurrent) { session ->
             storage.getOneByAction(action, session.user.id).fold(
                 onFailure = { err -> Result.failure(err) },
@@ -105,7 +102,7 @@ class UserActionsRepositoryImpl(
                                 )
                             )
                         },
-                        onSome = { action -> Result.success(action.action) }
+                        onSome = { action -> Result.success(UserAction(action.id, action.action)) }
                     )
                 }
             )
@@ -130,10 +127,7 @@ class UserActionsRepositoryImpl(
                                         id = Uuid.parse(actionRes.id),
                                         action = action
                                     )
-                                    storage.deleteByAction(
-                                        action = uAction.action,
-                                        userId = session.user.id,
-                                    )
+                                    storage.delete(uAction.id)
                                     uAction
                                 }
                                 storage.insertAll(mapOf(session.user.id to actions))
@@ -157,8 +151,9 @@ class UserActionsRepositoryImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun deleteByAction(action: Actions): Result<Unit> {
-        return withSession(sRepo::getCurrent) { session ->
-            storage.deleteByAction(action, session.user.id)
-        }
+        return getAction(action).fold(
+            onFailure = { err -> Result.failure(err) },
+            onSuccess = { action -> storage.delete(action.id) }
+        )
     }
 }

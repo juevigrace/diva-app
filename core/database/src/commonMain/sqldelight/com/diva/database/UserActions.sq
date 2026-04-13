@@ -20,10 +20,6 @@ VALUES (?, ?, ?);
 deleteAll:
 DELETE FROM diva_user_pending_actions;
 
-deleteByAction:
-DELETE FROM diva_user_pending_actions
-WHERE user_id = ? AND action_name = ?;
-
 deleteById:
 DELETE FROM diva_user_pending_actions
 WHERE id = ?;

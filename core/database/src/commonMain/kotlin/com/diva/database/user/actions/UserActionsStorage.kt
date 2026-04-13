@@ -30,9 +30,6 @@ interface UserActionsStorage {
     suspend fun delete(id: Uuid): Result<Unit>
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun deleteByAction(action: Actions, userId: Uuid): Result<Unit>
-
-    @OptIn(ExperimentalUuidApi::class)
     suspend fun deleteByUser(userId: Uuid): Result<Unit>
 
     suspend fun deleteAll(): Result<Unit>

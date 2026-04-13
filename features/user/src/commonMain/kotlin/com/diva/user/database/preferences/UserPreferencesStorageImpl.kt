@@ -6,6 +6,7 @@ import com.diva.models.Theme
 import com.diva.models.user.preferences.UserPreferences
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
+import io.github.juevigrace.diva.core.errors.ConstraintViolationException
 import io.github.juevigrace.diva.core.errors.DuplicateKeyException
 import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
 import io.github.juevigrace.diva.core.getOrElse
@@ -77,7 +78,7 @@ class UserPreferencesStorageImpl(
     override suspend fun upsert(item: UserPreferences): Result<Unit> {
         return insert(item).fold(
             onFailure = { err ->
-                if (err is DuplicateKeyException) {
+                if (err is DuplicateKeyException || err is ConstraintViolationException) {
                     update(item)
                 } else {
                     Result.failure(err)

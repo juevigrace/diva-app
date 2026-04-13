@@ -7,7 +7,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE diva_user 
-SET email = ?, username = ?, alias = ?, avatar = ?, bio = ?, updated_at = (strftime('%s', 'now'))
+SET email = ?, username = ?, phone_number = ?, birth_date = ?, user_verified = ?, alias = ?, avatar = ?, bio = ?, role = ?, updated_at = ?, deleted_at = ?
 WHERE id = ? AND deleted_at IS NULL;
 
 deleteById:

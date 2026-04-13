@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 
 // TODO: implement events for this?
 // TODO: Implement error channel to avoid returning errors directly in the functions
@@ -51,9 +52,11 @@ interface Repository {
         sessionCall: suspend () -> Result<Session>,
         onFound: suspend (session: Session) -> Result<T>
     ): Result<T> {
-        return sessionCall().fold(
-            onFailure = { err -> Result.failure(err) },
-            onSuccess = { session -> onFound(session) }
-        )
+        return withContext(Dispatchers.IO) {
+            sessionCall().fold(
+                onFailure = { err -> Result.failure(err) },
+                onSuccess = { session -> onFound(session) }
+            )
+        }
     }
 }
