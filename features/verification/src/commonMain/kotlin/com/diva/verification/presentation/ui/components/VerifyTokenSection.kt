@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,7 +16,6 @@ import com.diva.core.ui.resources.Res
 import com.diva.core.ui.resources.verification_code
 import com.diva.core.ui.resources.verification_code_description
 import com.diva.core.ui.resources.verification_code_placeholder
-import com.diva.ui.components.input.LocalTextField
 import com.diva.verification.presentation.events.VerificationEvents
 import com.diva.verification.presentation.state.VerificationState
 import io.github.juevigrace.diva.core.Option
@@ -32,17 +32,17 @@ fun ColumnScope.VerifyTokenSection(
         text = stringResource(Res.string.verification_code_description),
         style = MaterialTheme.typography.bodyLarge,
     )
-    LocalTextField(
+    OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
         value = state.verificationForm.token,
         onValueChange = { newValue ->
             onEvent(VerificationEvents.OnTokenChanged(newValue))
         },
-        label = stringResource(Res.string.verification_code),
-        placeholder = stringResource(Res.string.verification_code_placeholder),
+        label = { Text(text = stringResource(Res.string.verification_code)) },
+        placeholder = { Text(text = stringResource(Res.string.verification_code_placeholder)) },
         supportingText = when (val text = state.formValidation.tokenError) {
             Option.None -> null
-            is Option.Some -> text.value
+            is Option.Some -> { { Text(text = text.value) } }
         },
         isError = state.formValidation.tokenError.isPresent(),
         singleLine = true,

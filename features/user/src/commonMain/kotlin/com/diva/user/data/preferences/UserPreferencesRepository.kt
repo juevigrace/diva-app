@@ -19,6 +19,8 @@ interface UserPreferencesRepository : Repository {
 
     suspend fun createCloudPreferences(prefs: UserPreferences): Result<Unit>
 
+    suspend fun updateCloudPreferences(prefs: UserPreferences): Result<Unit>
+
     suspend fun updatePreferences(prefs: UserPreferences): Result<Unit>
 
     suspend fun updateLocalPrefUserId(): Result<Unit>
@@ -83,10 +85,14 @@ class UserPreferencesRepositoryImpl(
         }
     }
 
-    override suspend fun updatePreferences(prefs: UserPreferences): Result<Unit> {
+    override suspend fun updateCloudPreferences(prefs: UserPreferences): Result<Unit> {
         return withSession(sessionRepository::getCurrent) { s ->
             client.updatePreferences(prefs.toPreferenceDto(), s.accessToken)
         }
+    }
+
+    override suspend fun updatePreferences(prefs: UserPreferences): Result<Unit> {
+        return storage.upsert(prefs)
     }
 
     @OptIn(ExperimentalUuidApi::class)

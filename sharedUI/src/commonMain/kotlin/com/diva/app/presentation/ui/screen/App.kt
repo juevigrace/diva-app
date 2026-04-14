@@ -1,6 +1,6 @@
 package com.diva.app.presentation.ui.screen
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,6 +20,7 @@ import com.diva.verification.presentation.ui.components.navigation.verificationE
 import io.github.juevigrace.diva.ui.components.layout.Screen
 import io.github.juevigrace.diva.ui.components.navigation.Navigator
 import io.github.juevigrace.diva.ui.components.toaster.LocalToaster
+import io.github.juevigrace.diva.ui.components.toaster.Toaster
 import io.github.juevigrace.diva.ui.components.wrappers.DivaApp
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.theme.DivaThemeConfig
@@ -56,9 +57,9 @@ fun App() {
     ) {
         Screen(
             snackBarHost = { Toaster() }
-        ) { innerPadding ->
+        ) { _ ->
             Navigator(
-                modifier = Modifier.padding(innerPadding),
+                modifier = Modifier.fillMaxSize(),
                 navigator = navigator,
                 entryProvider = entryProvider {
                     onboardingEntries()

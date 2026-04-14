@@ -19,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,7 +53,6 @@ import com.diva.core.ui.resources.success
 import com.diva.core.ui.resources.terms_and_conditions
 import com.diva.core.ui.resources.username
 import com.diva.core.ui.resources.username_placeholder
-import com.diva.ui.components.input.LocalTextField
 import com.diva.ui.components.input.SecureTextField
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.isPresent
@@ -72,18 +72,17 @@ fun SignUpForm(
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        LocalTextField(
+        OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
-            debounceMillis = 600L,
             value = state.signUpForm.email,
             onValueChange = { newValue ->
                 onEvent(SignUpEvents.OnEmailChanged(newValue))
             },
-            label = stringResource(Res.string.email),
-            placeholder = stringResource(Res.string.email_placeholder),
+            label = { Text(text = stringResource(Res.string.email)) },
+            placeholder = { Text(text = stringResource(Res.string.email_placeholder)) },
             supportingText = when (val text = state.formValidation.emailError) {
                 Option.None -> null
-                is Option.Some -> text.value
+                is Option.Some -> { { Text(text = text.value) } }
             },
             leadingIcon = {
                 Icon(
@@ -103,15 +102,14 @@ fun SignUpForm(
             ),
         )
 
-        LocalTextField(
+        OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = state.signUpForm.username,
-            debounceMillis = 600L,
             onValueChange = { newValue ->
                 onEvent(SignUpEvents.OnUsernameChanged(newValue))
             },
-            label = stringResource(Res.string.username),
-            placeholder = stringResource(Res.string.username_placeholder),
+            label = { Text(text = stringResource(Res.string.username)) },
+            placeholder = { Text(text = stringResource(Res.string.username_placeholder)) },
             leadingIcon = {
                 Icon(
                     modifier = Modifier.size(24.dp),
@@ -121,7 +119,7 @@ fun SignUpForm(
             },
             supportingText = when (val text = state.formValidation.usernameError) {
                 Option.None -> null
-                is Option.Some -> text.value
+                is Option.Some -> { { Text(text = text.value) } }
             },
             isError = state.formValidation.usernameError.isPresent(),
             singleLine = true,

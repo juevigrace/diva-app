@@ -6,6 +6,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,13 +43,13 @@ fun SecureTextField(
 ) {
     var showText by remember { mutableStateOf(false) }
 
-    LocalTextField(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier,
-        label = label,
-        placeholder = placeholder,
-        supportingText = supportingText,
+        label = label?.let { text -> { Text(text = text) } },
+        placeholder = placeholder?.let { text -> { Text(text = text) } },
+        supportingText = supportingText?.let { text -> { Text(text = text) } },
         leadingIcon = leadingIcon,
         trailingIcon = {
             IconButton(onClick = { showText = !showText }) {

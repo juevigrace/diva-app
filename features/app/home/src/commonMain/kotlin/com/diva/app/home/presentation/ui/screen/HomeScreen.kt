@@ -23,6 +23,10 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(HomeEvents.OnRender)
+    }
+
     Screen(
         topBar = {
             TopNavBar(

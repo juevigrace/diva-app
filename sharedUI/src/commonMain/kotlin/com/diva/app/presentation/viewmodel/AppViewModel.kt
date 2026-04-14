@@ -77,6 +77,7 @@ class AppViewModel(
         }
         repository.ping().fold(
             onFailure = { err ->
+                println(err)
                 if (err is ConstraintException && err.field == "session") {
                     _state.update { state ->
                         state.copy(

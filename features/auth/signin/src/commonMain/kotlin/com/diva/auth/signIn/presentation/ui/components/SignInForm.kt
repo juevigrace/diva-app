@@ -17,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,7 +42,6 @@ import com.diva.core.ui.resources.password
 import com.diva.core.ui.resources.password_placeholder
 import com.diva.core.ui.resources.sign_in
 import com.diva.core.ui.resources.success
-import com.diva.ui.components.input.LocalTextField
 import com.diva.ui.components.input.SecureTextField
 import com.diva.ui.navigation.arguments.ForgotAction
 import io.github.juevigrace.diva.core.Option
@@ -62,17 +62,21 @@ fun SignInForm(
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        LocalTextField(
+        OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = state.signInForm.username,
             onValueChange = { newValue ->
                 onEvent(SignInEvents.OnUsernameChanged(newValue))
             },
-            label = stringResource(Res.string.email_or_username),
-            placeholder = stringResource(Res.string.email_placeholder),
+            label = {
+                Text(text = stringResource(Res.string.email_or_username))
+            },
+            placeholder = { Text(text = stringResource(Res.string.email_placeholder)) },
             supportingText = when (val text = state.formValidation.usernameError) {
                 Option.None -> null
-                is Option.Some -> text.value
+                is Option.Some -> {
+                    { Text(text = text.value) }
+                }
             },
             leadingIcon = {
                 Icon(
