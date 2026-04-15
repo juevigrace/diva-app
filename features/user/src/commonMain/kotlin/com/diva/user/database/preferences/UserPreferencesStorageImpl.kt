@@ -63,6 +63,7 @@ class UserPreferencesStorageImpl(
                     onboarding_completed = prefs.onboardingCompleted,
                     language = prefs.language,
                     last_sync_at = prefs.lastSyncAt.getOrElse { null }?.toEpochMilliseconds(),
+                    updated_at = prefs.updatedAt.getOrElse { Clock.System.now() }.toEpochMilliseconds()
                 )
             }
             if (rows.toInt() == 0) {

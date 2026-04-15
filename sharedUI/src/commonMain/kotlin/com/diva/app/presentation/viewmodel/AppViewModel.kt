@@ -10,6 +10,7 @@ import com.diva.ui.navigation.HomeDestination
 import com.diva.ui.navigation.OnboardingDestination
 import com.diva.ui.navigation.SignInDestination
 import io.github.juevigrace.diva.core.errors.ConstraintException
+import io.github.juevigrace.diva.core.util.logError
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.ToastMessage
 import io.github.juevigrace.diva.ui.toast.Toaster
@@ -55,6 +56,7 @@ class AppViewModel(
     private suspend fun handleGetPreferences() {
         repository.getPreferences().fold(
             onFailure = { err ->
+                logError(this::class.simpleName ?: "AppViewModel", err.toString())
                 toaster.show(err.toToast())
             },
             onSuccess = { prefs ->
@@ -77,7 +79,7 @@ class AppViewModel(
         }
         repository.ping().fold(
             onFailure = { err ->
-                println(err)
+                logError(this::class.simpleName ?: "AppViewModel", err.toString())
                 if (err is ConstraintException && err.field == "session") {
                     _state.update { state ->
                         state.copy(

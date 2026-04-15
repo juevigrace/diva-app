@@ -8,6 +8,7 @@ import com.diva.ui.messages.toToast
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.VerificationDestination
 import com.diva.ui.navigation.arguments.VerificationAction
+import io.github.juevigrace.diva.core.util.logError
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
@@ -38,9 +39,6 @@ class HomeViewModel(
             launch {
                 handleActions()
             }
-            launch {
-                updatePreferences()
-            }
         }
     }
 
@@ -48,6 +46,7 @@ class HomeViewModel(
         repository.getActions().collect { result ->
             result.fold(
                 onFailure = { err ->
+                    logError(this::class.simpleName ?: "HomeViewModel", err.toString())
                     toaster.show(err.toToast())
                 },
                 onSuccess = { actions ->
@@ -59,16 +58,11 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun updatePreferences() {
-        repository.updatePreferences().onFailure { err ->
-            toaster.show(err.toToast())
-        }
-    }
-
     private suspend fun handleUser() {
         repository.getMe().collect { result ->
             result.fold(
                 onFailure = { err ->
+                    logError(this::class.simpleName ?: "HomeViewModel", err.toString())
                     toaster.show(err.toToast())
                 },
                 onSuccess = { user ->

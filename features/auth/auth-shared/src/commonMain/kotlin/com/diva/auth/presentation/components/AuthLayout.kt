@@ -13,17 +13,23 @@ import com.diva.core.ui.resources.Res
 import com.diva.core.ui.resources.logo
 import com.diva.core.ui.resources.puerro
 import com.diva.ui.components.layout.VerticalScrollableLayout
+import kotlinx.serialization.json.JsonNull.content
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun AuthLayout(
+    modifier: Modifier = Modifier,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
     content: LazyListScope.() -> Unit
 ) {
     VerticalScrollableLayout(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp)
+        modifier = modifier,
+        horizontalAlignment = horizontalAlignment,
+        verticalArrangement = verticalArrangement,
+        contentPadding = contentPadding
     ) {
         item {
             Image(

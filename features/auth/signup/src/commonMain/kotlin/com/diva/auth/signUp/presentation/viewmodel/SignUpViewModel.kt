@@ -13,6 +13,7 @@ import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.HomeDestination
 import com.diva.user.data.UserRepository
 import io.github.juevigrace.diva.core.Option
+import io.github.juevigrace.diva.core.util.logError
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
@@ -161,6 +162,7 @@ class SignUpViewModel(
         scope.launch {
             repository.signUp(formState.value).fold(
                 onFailure = { err ->
+                    logError(this::class.simpleName ?: "SignUpViewModel", err.toString())
                     toaster.show(err.toToast())
                     _state.update { state ->
                         state.copy(
@@ -187,7 +189,9 @@ class SignUpViewModel(
     private fun checkEmailTaken() {
         scope.launch {
             uRepository.checkEmail(formState.value.email).fold(
-                onFailure = { err -> toaster.show(err.toToast()) },
+                onFailure = { err ->
+                    logError(this::class.simpleName ?: "SignUpViewModel", err.toString())
+                    toaster.show(err.toToast()) },
                 onSuccess = { available ->
                     formState.update { it.copy(isEmailTaken = !available) }
                 }
@@ -199,7 +203,9 @@ class SignUpViewModel(
     private fun checkUsernameTaken() {
         scope.launch {
             uRepository.checkUsername(formState.value.username).fold(
-                onFailure = { err -> toaster.show(err.toToast()) },
+                onFailure = { err ->
+                    logError(this::class.simpleName ?: "SignUpViewModel", err.toString())
+                    toaster.show(err.toToast()) },
                 onSuccess = { available ->
                     formState.update { it.copy(isUsernameTaken = !available) }
                 }

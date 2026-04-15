@@ -73,6 +73,7 @@ class UserPermissionsStorageImpl(
                     }.toEpochMilliseconds(),
                     user_id = userId.toString(),
                     permission_id = perm.permission.id.toString(),
+                    updated_at = perm.updatedAt.toEpochMilliseconds()
                 )
             }
             if (rows.toInt() == 0) {

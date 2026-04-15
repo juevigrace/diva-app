@@ -6,7 +6,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import com.diva.app.home.presentation.ui.components.navigation.homeEntries
 import com.diva.app.presentation.state.AppState
 import com.diva.app.presentation.viewmodel.AppViewModel
@@ -61,6 +63,10 @@ fun App() {
             Navigator(
                 modifier = Modifier.fillMaxSize(),
                 navigator = navigator,
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
                 entryProvider = entryProvider {
                     onboardingEntries()
                     authEntries()

@@ -4,7 +4,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE diva_user_preferences 
-SET theme = ?, onboarding_completed = ?, language = ?, last_sync_at = ?, updated_at = NOW()
+SET theme = ?, onboarding_completed = ?, language = ?, last_sync_at = ?, updated_at = ?
 WHERE id = ?;
 
 updateUserId:

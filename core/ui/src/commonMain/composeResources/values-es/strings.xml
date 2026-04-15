@@ -14,6 +14,7 @@
     <string name="email_or_username">Correo o Nombre de Usuario</string>
     <string name="password">Contraseña</string>
     <string name="forgot_password">¿Olvidaste tu Contraseña?</string>
+    <string name="forgot_password_title">Olvidaste tu Contraseña</string>
     <string name="reset_password">Restablecer Contraseña</string>
     <string name="password_reset_email_title">Ingresa tu correo para restablecer tu contraseña</string>
     <string name="send_verification_code">Enviar Código de Verificación</string>
@@ -51,9 +52,12 @@
     <string name="submit">Enviar</string>
     <string name="success">Éxito</string>
     <string name="verification">Verficación</string>
+    <string name="verify">Verificar</string>
     <string name="session_expired">Sesión expirada</string>
     <string name="email_sent">Correo enviado</string>
     <string name="token">Token</string>
+    <string name="resend_verification_text">¿No recibiste el código de verificación?</string>
+    <string name="resend">Reenviar</string>
     <!--PLACEHOLDERS-->
     <string name="email_placeholder">ejemplo@correo.com</string>
     <string name="username_placeholder">juan123</string>

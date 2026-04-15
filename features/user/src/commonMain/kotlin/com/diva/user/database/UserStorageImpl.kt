@@ -52,6 +52,7 @@ class UserStorageImpl(
                     username = item.username,
                     birth_date = item.birthDate.toEpochMilliseconds(),
                     phone_number = item.phoneNumber,
+                    user_verified = item.userVerified,
                     alias = item.alias,
                     avatar = item.avatar,
                     bio = item.bio,

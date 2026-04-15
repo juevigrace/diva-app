@@ -3,13 +3,17 @@ package com.diva.verification.data
 import com.diva.auth.session.data.SessionRepository
 import com.diva.models.Repository
 import com.diva.models.actions.Actions
+import com.diva.models.api.ApiResponse
+import com.diva.models.api.auth.session.dtos.SessionDataDto
 import com.diva.models.api.auth.session.response.SessionResponse
 import com.diva.models.api.verification.dtos.RequestVerificationDto
 import com.diva.models.api.verification.dtos.VerificationDto
 import com.diva.models.auth.Session
+import com.diva.models.config.AppConfig
 import com.diva.user.data.actions.UserActionsRepository
 import com.diva.verification.data.api.client.VerificationApi
 import io.github.juevigrace.diva.core.errors.ConstraintException
+import io.ktor.client.call.body
 import kotlin.fold
 import kotlin.uuid.ExperimentalUuidApi
 
@@ -23,6 +27,7 @@ class VerificationRepositoryImpl(
     private val api: VerificationApi,
     private val uaRepository: UserActionsRepository,
     private val sRepository: SessionRepository,
+    private val config: AppConfig
 ) : VerificationRepository {
     override suspend fun requestUserVerification(): Result<Unit> {
         return withSession(sRepository::getCurrent) { session ->
@@ -64,10 +69,29 @@ class VerificationRepositoryImpl(
     }
 
     private suspend fun handlePasswordReset(token: String): Result<Unit> {
-        return api.verify<SessionResponse>(VerificationDto(token)).fold(
+        return api.verify(
+            VerificationDto(
+                token = token,
+                sessionData = SessionDataDto(
+                    device = config.deviceName,
+                    userAgent = config.agent
+                ),
+            )
+        ).fold(
             onFailure = { err -> Result.failure(err) },
-            onSuccess = { res ->
-                val session = Session.fromResponse(res)
+            onSuccess = { response ->
+                val res: ApiResponse<SessionResponse> = response.body()
+                if (res.data == null) {
+                    return@fold Result.failure(
+                        ConstraintException(
+                            field = "data",
+                            constraint = "not null",
+                            value = "null"
+                        )
+                    )
+                }
+
+                val session = Session.fromResponse(res.data!!)
                 sRepository.newSession(session).onFailure { err ->
                     return@fold Result.failure(err)
                 }

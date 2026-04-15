@@ -5,10 +5,14 @@ import com.diva.database.user.preferences.UserPreferencesStorage
 import com.diva.models.Repository
 import com.diva.models.user.preferences.UserPreferences
 import com.diva.user.api.client.preferences.UserPreferencesApi
+import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.errors.ConstraintException
+import io.github.juevigrace.diva.core.errors.ConstraintViolationException
 import io.github.juevigrace.diva.core.fold
+import io.github.juevigrace.diva.core.util.logError
 import kotlinx.coroutines.flow.Flow
 import kotlin.fold
+import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -23,7 +27,7 @@ interface UserPreferencesRepository : Repository {
 
     suspend fun updatePreferences(prefs: UserPreferences): Result<Unit>
 
-    suspend fun updateLocalPrefUserId(): Result<Unit>
+    suspend fun setUserPreferences(): Result<Unit>
 }
 
 class UserPreferencesRepositoryImpl(
@@ -59,14 +63,13 @@ class UserPreferencesRepositoryImpl(
                 onSuccess = { opt ->
                     opt.fold(
                         onNone = {
-                            emit(
-                                Result.failure(
-                                    ConstraintException(
-                                        field = "preferences",
-                                        constraint = "missing",
-                                        value = "null"
-                                    )
-                                )
+                            setUserPreferences().fold(
+                                onFailure = { err ->
+                                    emit(Result.failure(err))
+                                },
+                                onSuccess = {
+                                    return@fold
+                                }
                             )
                         },
                         onSome = { prefs ->
@@ -91,30 +94,28 @@ class UserPreferencesRepositoryImpl(
         }
     }
 
+    @OptIn(ExperimentalUuidApi::class)
     override suspend fun updatePreferences(prefs: UserPreferences): Result<Unit> {
-        return storage.upsert(prefs)
+        return storage.upsert(prefs.copy(updatedAt = Option.of(Clock.System.now())))
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun updateLocalPrefUserId(): Result<Unit> {
+    override suspend fun setUserPreferences(): Result<Unit> {
         return withSession(sessionRepository::getCurrent) { session ->
-            storage.getByUser(session.user.id).fold(
-                onFailure = { err -> Result.failure(err) },
-                onSuccess = { opt ->
-                    opt.fold(
-                        onNone = {
-                            Result.failure(
-                                ConstraintException(
-                                    field = "preferences",
-                                    constraint = "missing",
-                                    value = "null"
-                                )
-                            )
-                        },
-                        onSome = { prefs -> storage.updateUserId(prefs.id, session.user.id) }
-                    )
+            val prefs = UserPreferences(id = Uuid.random(), onboardingCompleted = true)
+            storage.upsert(prefs).onFailure { err ->
+                return@withSession Result.failure(err)
+            }
+            storage.updateUserId(prefs.id, session.user.id).onFailure { err ->
+                if (err is ConstraintViolationException) {
+                    return@onFailure
                 }
-            )
+                return@withSession Result.failure(err)
+            }
+            createCloudPreferences(prefs).onFailure { err ->
+                return@withSession Result.failure(err)
+            }
+            Result.success(Unit)
         }
     }
 }

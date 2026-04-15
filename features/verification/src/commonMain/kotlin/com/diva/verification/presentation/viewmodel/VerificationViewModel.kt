@@ -15,10 +15,12 @@ import com.diva.verification.data.validation.VerificationValidator
 import com.diva.verification.presentation.events.VerificationEvents
 import com.diva.verification.presentation.state.VerificationState
 import io.github.juevigrace.diva.core.Option
+import io.github.juevigrace.diva.core.util.logError
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.ToastMessage
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -71,17 +73,61 @@ class VerificationViewModel(
 
     fun onEvent(event: VerificationEvents) {
         when (event) {
-            VerificationEvents.OnBack -> navigator.pop()
             is VerificationEvents.OnRequest -> requestVerification()
-            is VerificationEvents.OnSetAction -> setAction(event.action)
             VerificationEvents.OnSubmit -> submit()
+            VerificationEvents.OnBack -> navigator.pop()
+            is VerificationEvents.OnSetAction -> setAction(event.action)
+            VerificationEvents.OnResendEnable -> enableResend()
             is VerificationEvents.OnTokenChanged -> tokenChanged(event.token)
         }
     }
 
-    private fun tokenChanged(value: String) {
-        formState.update { state -> state.copy(token = value) }
-        formValidationState.update { state -> state.copy(showTokenError = true) }
+    private fun requestVerification() {
+        _state.update { state -> state.copy(resendEnabled = false, resendCountdown = 60) }
+        when (val action = _state.value.action) {
+            is VerificationAction.PasswordReset -> handleRequestPasswordReset(action.email)
+            VerificationAction.UserVerification -> handleRequestUserVerification()
+            VerificationAction.Unspecified -> {
+                scope.launch {
+                    toaster.show(
+                        ToastMessage(
+                            message = getString(Res.string.error_action_not_specified),
+                            isError = true
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun handleRequestPasswordReset(email: String) {
+        scope.launch {
+            repository.requestPasswordReset(email).fold(
+                onFailure = { err ->
+                    logError(this::class.simpleName ?: "VerificationViewModel", err.toString())
+                    toaster.show(err.toToast())
+                },
+                onSuccess = {
+                    toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
+                }
+            )
+            startResendCountDown()
+        }
+    }
+
+    private fun handleRequestUserVerification() {
+        scope.launch {
+            repository.requestUserVerification().fold(
+                onFailure = { err ->
+                    logError(this::class.simpleName ?: "VerificationViewModel", err.toString())
+                    toaster.show(err.toToast())
+                },
+                onSuccess = {
+                    toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
+                }
+            )
+            startResendCountDown()
+        }
     }
 
     private fun submit() {
@@ -111,6 +157,7 @@ class VerificationViewModel(
         scope.launch {
             repository.verify(formState.value.token, Actions.PASSWORD_RESET).fold(
                 onFailure = { err ->
+                    logError(this::class.simpleName ?: "VerificationViewModel", err.toString())
                     toaster.show(err.toToast())
                     _state.update { state ->
                         state.copy(
@@ -136,6 +183,7 @@ class VerificationViewModel(
         scope.launch {
             repository.verify(formState.value.token, Actions.USER_VERIFICATION).fold(
                 onFailure = { err ->
+                    logError(this::class.simpleName ?: "VerificationViewModel", err.toString())
                     toaster.show(err.toToast())
                     _state.update { state ->
                         state.copy(
@@ -157,54 +205,29 @@ class VerificationViewModel(
         }
     }
 
-    private fun requestVerification() {
-        when (val action = _state.value.action) {
-            is VerificationAction.PasswordReset -> handleRequestPasswordReset(action.email)
-            VerificationAction.UserVerification -> handleRequestUserVerification()
-            VerificationAction.Unspecified -> {
-                scope.launch {
-                    toaster.show(
-                        ToastMessage(
-                            message = getString(Res.string.error_action_not_specified),
-                            isError = true
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    private fun handleRequestPasswordReset(email: String) {
-        scope.launch {
-            repository.requestPasswordReset(email).fold(
-                onFailure = { err ->
-                    toaster.show(err.toToast())
-                },
-                onSuccess = {
-                    toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
-                }
-            )
-        }
-    }
-
-    private fun handleRequestUserVerification() {
-        scope.launch {
-            repository.requestUserVerification().fold(
-                onFailure = { err ->
-                    toaster.show(err.toToast())
-                },
-                onSuccess = {
-                    toaster.show(ToastMessage(message = getString(Res.string.email_sent)))
-                }
-            )
-        }
-    }
-
     private fun setAction(action: VerificationAction) {
         _state.update { state ->
             state.copy(
                 action = action,
             )
         }
+    }
+    private fun enableResend() {
+        _state.update { state -> state.copy(resendEnabled = true) }
+    }
+
+    private fun startResendCountDown() {
+        scope.launch {
+            for (i in 59 downTo 1) {
+                _state.update { it.copy(resendCountdown = i) }
+                delay(1000)
+            }
+            _state.update { it.copy(resendEnabled = true, resendCountdown = 0) }
+        }
+    }
+
+    private fun tokenChanged(value: String) {
+        formState.update { state -> state.copy(token = value) }
+        formValidationState.update { state -> state.copy(showTokenError = true) }
     }
 }

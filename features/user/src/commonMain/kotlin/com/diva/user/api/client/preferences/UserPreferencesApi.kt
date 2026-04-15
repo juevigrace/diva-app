@@ -39,7 +39,7 @@ class UserPreferencesApiImpl(
                 serializer = UserPreferencesDto.serializer()
             ).getOrThrow()
             when (response.status) {
-                HttpStatusCode.Accepted -> return@tryResult
+                HttpStatusCode.Created -> return@tryResult
                 else -> {
                     val body: ApiResponse<Nothing> = response.body()
                     throw HttpException(

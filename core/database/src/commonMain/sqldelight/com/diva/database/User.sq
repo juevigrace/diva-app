@@ -2,8 +2,8 @@ count:
 SELECT COUNT(*) FROM diva_user;
 
 insert:
-INSERT INTO diva_user (id, email, username, birth_date, phone_number, alias, avatar, bio, role)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO diva_user (id, email, username, birth_date, phone_number, user_verified, alias, avatar, bio, role)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE diva_user 

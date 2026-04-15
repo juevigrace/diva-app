@@ -174,7 +174,7 @@ class AuthApiImpl(
             onError = { e -> e.toDivaNetworkException() }
         ) {
             val response: HttpResponse = client.patch(
-                path = "/api/user/forgot/password",
+                path = "/api/auth/forgot/password",
                 body = dto,
                 headers = mapOf("Authorization" to "Bearer $token"),
                 serializer = UpdatePasswordDto.serializer(),

@@ -24,6 +24,7 @@ interface SessionRepository : Repository {
     fun observeCurrent(): Flow<Result<Session>>
     suspend fun ping(): Result<Unit>
     suspend fun logout(): Result<Unit>
+    suspend fun closeCurrent(): Result<Unit>
     suspend fun refresh(): Result<Unit>
     suspend fun newSession(session: Session): Result<Unit>
 }
@@ -114,7 +115,13 @@ class SessionRepositoryImpl(
 
                 return@withSession Result.failure(err)
             }
+            closeCurrent()
+        }
+    }
 
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun closeCurrent(): Result<Unit> {
+        return withSession(::getCurrent) { session ->
             storage.delete(session.id).onFailure { err ->
                 return@withSession Result.failure(err)
             }

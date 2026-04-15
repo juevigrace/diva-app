@@ -4,7 +4,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE diva_session 
-SET access_token = ?, refresh_token = ?, status = ?, expires_at = ?, updated_at = (strftime('%s', 'now'))
+SET access_token = ?, refresh_token = ?, status = ?, expires_at = ?, updated_at = ?
 WHERE id = ?;
 
 updateActive:

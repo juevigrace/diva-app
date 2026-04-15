@@ -16,7 +16,7 @@ import com.diva.ui.navigation.HomeDestination
 import com.diva.ui.navigation.SignUpDestination
 import com.diva.ui.navigation.arguments.ForgotAction
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.fold
+import io.github.juevigrace.diva.core.util.logError
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
@@ -135,6 +135,7 @@ class SignInViewModel(
         scope.launch {
             repository.signIn(formState.value).fold(
                 onFailure = { err ->
+                    logError(this::class.simpleName ?: "SignInViewModel", err.toString())
                     toaster.show(err.toToast())
                     _state.update { state ->
                         state.copy(

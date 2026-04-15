@@ -6,6 +6,7 @@ import com.diva.ui.messages.toToast
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.SignInDestination
 import com.diva.user.data.preferences.UserPreferencesRepository
+import io.github.juevigrace.diva.core.util.logError
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.Toaster
 import io.github.juevigrace.diva.ui.viewmodel.DivaViewModel
@@ -37,15 +38,20 @@ class OnboardingViewModel(
     private fun handleOnboardingCompleted() {
         scope.launch {
             prefsRepository.getLocalPreferences().fold(
-                onFailure = { err -> toaster.show(err.toToast()) },
+                onFailure = { err ->
+                    logError(this::class.simpleName ?: "OnboardingViewModel", err.toString())
+                    toaster.show(err.toToast())
+                },
                 onSuccess = { prefs ->
                     prefsRepository.updatePreferences(prefs.copy(onboardingCompleted = true)).onFailure { err ->
+                        logError(this::class.simpleName ?: "OnboardingViewModel", err.toString())
                         toaster.show(err.toToast())
                     }
+
+                    navigator.replaceAll(SignInDestination)
                 }
             )
         }
-        navigator.replaceAll(SignInDestination)
     }
 
     private fun nextPage() {

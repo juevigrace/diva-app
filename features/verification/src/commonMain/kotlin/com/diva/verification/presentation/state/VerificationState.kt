@@ -10,6 +10,9 @@ data class VerificationState(
     val verificationForm: VerificationForm = VerificationForm(),
     val formValidation: VerificationValidation = VerificationValidation(),
 
+    val resendCountdown: Int = 0,
+    val resendEnabled: Boolean = false,
+
     val submitLoading: Boolean = false,
     val submitEnabled: Boolean = false,
     val submitSuccess: Boolean = false,

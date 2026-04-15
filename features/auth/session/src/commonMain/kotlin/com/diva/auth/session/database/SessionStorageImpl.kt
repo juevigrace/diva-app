@@ -9,12 +9,10 @@ import com.diva.models.user.User
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
 import io.github.juevigrace.diva.core.errors.NoRowsAffectedException
-import io.github.juevigrace.diva.core.isEmpty
-import io.github.juevigrace.diva.core.map
+import io.github.juevigrace.diva.core.fold
 import io.github.juevigrace.diva.database.DivaDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlin.map
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -28,29 +26,45 @@ class SessionStorageImpl(
     override suspend fun getCurrentSession(): Result<Option<Session>> {
         return db.getOne {
             sessionQueries.findCurrentWithUser(mapper = ::mapToEntity)
-        }.map { opt ->
-            if (opt.isEmpty()) {
-                return@map db.getOne {
-                    sessionQueries.findCurrent(mapper = ::mapToEntity)
-                }.getOrDefault(Option.None)
-            } else {
-                return@map opt
+        }.fold(
+            onFailure = { err -> Result.failure(err) },
+            onSuccess = { opt ->
+                opt.fold(
+                    onNone = { Result.success(Option.None) },
+                    onSome = { s ->
+                        if (s.user.id == Uuid.NIL) {
+                            db.getOne {
+                                sessionQueries.findCurrent(mapper = ::mapToEntity)
+                            }
+                        } else {
+                            Result.success(Option.Some(s))
+                        }
+                    }
+                )
             }
-        }
+        )
     }
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getCurrentSessionFlow(): Flow<Result<Option<Session>>> {
         return db.getOneAsFlow { sessionQueries.findCurrentWithUser(mapper = ::mapToEntity) }.map { res ->
-            res.map { opt ->
-                if (opt.isEmpty()) {
-                    return@map db.getOne {
-                        sessionQueries.findCurrent(mapper = ::mapToEntity)
-                    }.getOrDefault(Option.None)
-                } else {
-                    return@map opt
+            res.fold(
+                onFailure = { err -> Result.failure(err) },
+                onSuccess = { opt ->
+                    opt.fold(
+                        onNone = { Result.success(Option.None) },
+                        onSome = { s ->
+                            if (s.user.id == Uuid.NIL) {
+                                db.getOne {
+                                    sessionQueries.findCurrent(mapper = ::mapToEntity)
+                                }
+                            } else {
+                                Result.success(Option.Some(s))
+                            }
+                        }
+                    )
                 }
-            }
+            )
         }
     }
 
@@ -123,6 +137,7 @@ class SessionStorageImpl(
                     refresh_token = item.refreshToken,
                     status = item.status,
                     expires_at = item.expiresAt.toEpochMilliseconds(),
+                    updated_at = item.updatedAt.toEpochMilliseconds()
                 )
             }
             if (rows.toInt() == 0) {

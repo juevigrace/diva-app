@@ -15,7 +15,7 @@ import io.ktor.http.HttpStatusCode
 
 interface VerificationApi {
     suspend fun requestVerification(dto: RequestVerificationDto): Result<Unit>
-    suspend fun<T> verify(dto: VerificationDto): Result<T>
+    suspend fun verify(dto: VerificationDto): Result<HttpResponse>
     suspend fun verifyWithAuth(dto: VerificationDto, token: String): Result<Unit>
 }
 
@@ -45,7 +45,7 @@ class VerificationApiImpl(
         }
     }
 
-    override suspend fun<T> verify(dto: VerificationDto): Result<T> {
+    override suspend fun verify(dto: VerificationDto): Result<HttpResponse> {
         return tryResult(
             onError = { e -> e.toDivaNetworkException() }
         ) {
@@ -55,14 +55,7 @@ class VerificationApiImpl(
                 serializer = VerificationDto.serializer(),
             ).getOrThrow()
             when (response.status) {
-                HttpStatusCode.OK -> {
-                    val body: ApiResponse<T> = response.body()
-                    body.data ?: throw ConstraintException(
-                        field = "data",
-                        constraint = "missing",
-                        value = body.message
-                    )
-                }
+                HttpStatusCode.OK -> response
                 else -> {
                     val body: ApiResponse<Nothing> = response.body()
                     throw HttpException(

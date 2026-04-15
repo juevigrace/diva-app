@@ -1,8 +1,5 @@
 package com.diva.auth.signIn.presentation.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,11 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +36,7 @@ import com.diva.core.ui.resources.password
 import com.diva.core.ui.resources.password_placeholder
 import com.diva.core.ui.resources.sign_in
 import com.diva.core.ui.resources.success
+import com.diva.ui.components.buttons.LoadingButton
 import com.diva.ui.components.input.SecureTextField
 import com.diva.ui.navigation.arguments.ForgotAction
 import io.github.juevigrace.diva.core.Option
@@ -156,40 +151,25 @@ fun SignInForm(
                 }
             }
         }
-        OutlinedButton(
+        LoadingButton(
             modifier = Modifier.fillMaxWidth(),
-            enabled = state.submitEnabled,
-            colors = ButtonDefaults.buttonColors(),
             onClick = {
                 onEvent(SignInEvents.OnSubmit)
             },
+            enabled = state.submitEnabled,
+            isLoading = state.submitLoading,
         ) {
-            AnimatedVisibility(
-                visible = state.submitLoading,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
+            if (state.submitSuccess) {
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp),
+                    painter = painterResource(Res.drawable.ic_circle_check),
+                    contentDescription = stringResource(Res.string.success),
                 )
-            }
-            AnimatedVisibility(
-                visible = !state.submitLoading,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                if (state.submitSuccess) {
-                    Icon(
-                        modifier = Modifier
-                            .size(24.dp),
-                        painter = painterResource(Res.drawable.ic_circle_check),
-                        contentDescription = stringResource(Res.string.success),
-                    )
-                } else {
-                    Text(
-                        text = stringResource(Res.string.sign_in),
-                    )
-                }
+            } else {
+                Text(
+                    text = stringResource(Res.string.sign_in),
+                )
             }
         }
     }
