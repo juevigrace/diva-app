@@ -6,10 +6,10 @@ import com.diva.models.Repository
 import com.diva.models.user.preferences.UserPreferences
 import com.diva.user.api.client.preferences.UserPreferencesApi
 import io.github.juevigrace.diva.core.Option
-import io.github.juevigrace.diva.core.errors.ConstraintException
 import io.github.juevigrace.diva.core.errors.ConstraintViolationException
+import io.github.juevigrace.diva.core.errors.HttpException
 import io.github.juevigrace.diva.core.fold
-import io.github.juevigrace.diva.core.util.logError
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.Flow
 import kotlin.fold
 import kotlin.time.Clock
@@ -113,6 +113,9 @@ class UserPreferencesRepositoryImpl(
                 return@withSession Result.failure(err)
             }
             createCloudPreferences(prefs).onFailure { err ->
+                if (err is HttpException && err.statusCode == HttpStatusCode.Unauthorized) {
+                    return@onFailure
+                }
                 return@withSession Result.failure(err)
             }
             Result.success(Unit)
