@@ -97,4 +97,8 @@
     <string name="onboarding_chat_description">Message friends, join groups, and stay connected anytime, anywhere.</string>
     <string name="onboarding_get_started_title">Get Started</string>
     <string name="onboarding_get_started_description">Ready to explore all features? Sign in to begin your journey!</string>
+    <!--TABS-->
+    <string name="home">Home</string>
+    <string name="library">Library</string>
+    <string name="creation">Create</string>
 </resources>

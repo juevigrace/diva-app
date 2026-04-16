@@ -97,4 +97,8 @@
     <string name="onboarding_chat_description">Envía mensajes a amigos, únete a grupos y mantente conectado en cualquier momento y lugar.</string>
     <string name="onboarding_get_started_title">Empezar</string>
     <string name="onboarding_get_started_description">¿Listo para explorar todas las funciones? Inicia sesión para comenzar tu viaje.</string>
+    <!--TABS-->
+    <string name="home">Inicio</string>
+    <string name="library">Biblioteca</string>
+    <string name="creation">Crear</string>
 </resources>

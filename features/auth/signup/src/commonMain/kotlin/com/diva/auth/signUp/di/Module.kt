@@ -6,13 +6,14 @@ import com.diva.auth.signUp.presentation.viewmodel.SignUpViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 fun signUpModule(): Module {
     return module {
         singleOf(::SignUpRepositoryImpl) { bind<SignUpRepository>() }
 
-        viewModelOf(::SignUpViewModel)
+        viewModel { SignUpViewModel(get(), get(), get(named("app_router")), get(), get()) }
     }
 }

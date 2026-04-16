@@ -8,6 +8,10 @@ kotlin {
             implementation(projects.features.user)
 
             implementation(projects.core.ui)
+
+            implementation(projects.features.app.dashboard)
+            implementation(projects.features.app.feed)
+            implementation(projects.features.app.creation)
         }
     }
 }

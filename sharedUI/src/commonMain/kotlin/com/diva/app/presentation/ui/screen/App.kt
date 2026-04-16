@@ -31,6 +31,7 @@ import io.github.juevigrace.diva.ui.toast.Toaster
 import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.qualifier.named
 
 @Composable
 fun App() {
@@ -38,7 +39,7 @@ fun App() {
     val state: AppState by viewModel.state.collectAsStateWithLifecycle()
 
     val toaster: Toaster = koinInject()
-    val navigator: Navigator<Destination> = koinInject()
+    val navigator: Navigator<Destination> = koinInject(named("app_router"))
 
     LaunchedEffect(state.shouldNavigate, state.sessionLoading) {
         delay(1000)

@@ -21,6 +21,7 @@ import io.github.juevigrace.diva.ui.navigation.Navigator
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.core.qualifier.named
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,7 +29,7 @@ fun ErrorLayout(
     title: String = "",
     message: String,
 ) {
-    val navigator: Navigator<Destination> = koinInject()
+    val navigator: Navigator<Destination> = koinInject(named("app_router"))
     VerticalScrollableLayout(
         topBar = {
             TopNavBar(

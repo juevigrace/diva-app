@@ -6,13 +6,14 @@ import com.diva.auth.forgot.presentation.viewmodel.ForgotViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 fun forgotModule(): Module {
     return module {
         singleOf(::ForgotRepositoryImpl) { bind<ForgotRepository>() }
 
-        viewModelOf(::ForgotViewModel)
+        viewModel { ForgotViewModel(get(), get(named("app_router")), get()) }
     }
 }
