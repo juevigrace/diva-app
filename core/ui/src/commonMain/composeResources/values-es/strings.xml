@@ -58,6 +58,8 @@
     <string name="token">Token</string>
     <string name="resend_verification_text">¿No recibiste el código de verificación?</string>
     <string name="resend">Reenviar</string>
+    <string name="open_drawer">Abrir menú</string>
+    <string name="close_drawer">Cerrar menú</string>
     <!--PLACEHOLDERS-->
     <string name="email_placeholder">ejemplo@correo.com</string>
     <string name="username_placeholder">juan123</string>
