@@ -54,6 +54,7 @@ include(
     ":features:app:library",
     ":features:app:feed",
     ":features:app:creation",
+    ":features:app:profile",
 )
 
 include(

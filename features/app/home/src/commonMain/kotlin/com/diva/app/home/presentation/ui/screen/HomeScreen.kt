@@ -23,6 +23,7 @@ import com.diva.app.feed.presentation.ui.screen.FeedScreen
 import com.diva.app.home.presentation.events.HomeEvents
 import com.diva.app.home.presentation.viewmodel.HomeViewModel
 import com.diva.app.library.presentation.ui.screen.LibraryScreen
+import com.diva.app.profile.presentation.ui.screen.ProfileScreen
 import com.diva.core.ui.resources.Res
 import com.diva.core.ui.resources.close_drawer
 import com.diva.core.ui.resources.ic_menu
@@ -31,6 +32,7 @@ import com.diva.ui.navigation.CreationDestination
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.FeedDestination
 import com.diva.ui.navigation.LibraryDestination
+import com.diva.ui.navigation.ProfileDestination
 import io.github.juevigrace.diva.core.getOrElse
 import io.github.juevigrace.diva.core.map
 import io.github.juevigrace.diva.core.onSome
@@ -138,6 +140,9 @@ fun HomeScreen(
                     }
                     entry<CreationDestination> {
                         CreationScreen()
+                    }
+                    entry<ProfileDestination> {
+                        ProfileScreen()
                     }
                 }
             )

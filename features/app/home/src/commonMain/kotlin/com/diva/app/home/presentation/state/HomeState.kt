@@ -20,6 +20,7 @@ data class HomeState(
             AppTabs.Feed,
             AppTabs.Library,
             AppTabs.Creation,
+            AppTabs.Profile
         )
     }
 }

@@ -60,6 +60,11 @@
     <string name="resend">Reenviar</string>
     <string name="open_drawer">Abrir menú</string>
     <string name="close_drawer">Cerrar menú</string>
+    <string name="profile">Perfil</string>
+    <string name="settings">Configuración</string>
+    <string name="notifications">Notificaciones</string>
+    <string name="logout">Cerrar Sesión</string>
+    <string name="chats">Mensajes</string>
     <!--PLACEHOLDERS-->
     <string name="email_placeholder">ejemplo@correo.com</string>
     <string name="username_placeholder">juan123</string>

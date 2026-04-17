@@ -60,6 +60,11 @@
     <string name="resend">Resend</string>
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="notifications">Notifications</string>
+    <string name="logout">Logout</string>
+    <string name="chats">Chats</string>
     <!--PLACEHOLDERS-->
     <string name="email_placeholder">example@email.com</string>
     <string name="username_placeholder">johndoe</string>

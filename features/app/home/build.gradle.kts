@@ -12,6 +12,7 @@ kotlin {
             implementation(projects.features.app.library)
             implementation(projects.features.app.feed)
             implementation(projects.features.app.creation)
+            implementation(projects.features.app.profile)
         }
     }
 }
