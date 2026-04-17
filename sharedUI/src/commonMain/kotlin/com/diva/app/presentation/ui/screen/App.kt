@@ -35,6 +35,7 @@ import io.github.juevigrace.diva.ui.toast.Toaster
 import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import com.diva.ui.navigation.Navigators
 import org.koin.core.qualifier.named
 
 @Composable
@@ -43,9 +44,9 @@ fun App() {
     val state: AppState by viewModel.state.collectAsStateWithLifecycle()
 
     val toaster: Toaster = koinInject()
-    val navigator: Navigator<Destination> = koinInject(named("app_router"))
+    val navigator: Navigator<Destination> = koinInject(named(Navigators.APP_ROUTER))
     val backStack by navigator.backStack.collectAsStateWithLifecycle()
-    val tabNavigator: Navigator<Destination> = koinInject(named("home_tabs"))
+    val tabNavigator: Navigator<Destination> = koinInject(named(Navigators.HOME_TABS))
     val tabBackStack by tabNavigator.backStack.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.shouldNavigate, state.sessionLoading) {

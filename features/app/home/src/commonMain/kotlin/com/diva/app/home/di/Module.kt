@@ -11,6 +11,7 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
+import com.diva.ui.navigation.Navigators
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -25,6 +26,6 @@ fun homeModule(): Module {
 
         singleOf(::HomeRepositoryImpl) { bind<HomeRepository>() }
 
-        viewModel { HomeViewModel(get(), get(named("app_router")), get(named("home_tabs")), get()) }
+        viewModel { HomeViewModel(get(), get(named(Navigators.APP_ROUTER)), get(named(Navigators.HOME_TABS)), get()) }
     }
 }

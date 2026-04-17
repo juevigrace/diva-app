@@ -19,7 +19,7 @@ import io.ktor.http.HttpStatusCode
 interface AuthApi {
     suspend fun signIn(dto: SignInDto): Result<SessionResponse>
     suspend fun signUp(dto: SignUpDto): Result<SessionResponse>
-    suspend fun signOut(token: String): Result<Unit>
+    suspend fun signOut(dto: SessionDataDto, token: String): Result<Unit>
     suspend fun ping(token: String): Result<Unit>
     suspend fun refresh(dto: SessionDataDto, token: String): Result<SessionResponse>
     suspend fun forgotPasswordReset(dto: UpdatePasswordDto, token: String): Result<Unit>
@@ -88,13 +88,15 @@ class AuthApiImpl(
         }
     }
 
-    override suspend fun signOut(token: String): Result<Unit> {
+    override suspend fun signOut(dto: SessionDataDto,token: String): Result<Unit> {
         return tryResult(
             onError = { e -> e.toDivaNetworkException() }
         ) {
             val response: HttpResponse = client.post(
                 path = "/api/auth/signOut",
                 headers = mapOf("Authorization" to "Bearer $token"),
+                body = dto,
+                serializer = SessionDataDto.serializer()
             ).getOrThrow()
             when (response.status) {
                 HttpStatusCode.OK -> return@tryResult

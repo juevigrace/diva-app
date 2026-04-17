@@ -104,7 +104,10 @@ class SessionRepositoryImpl(
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun logout(): Result<Unit> {
         return withSession(::getCurrent) { session ->
-            api.signOut(session.accessToken).onFailure { err ->
+            api.signOut(
+                dto = session.data.toSessionDataDto(),
+                token = session.accessToken
+            ).onFailure { err ->
                 if (err is HttpException &&
                     err.statusCode.getOrElse {
                         HttpStatusCode.InternalServerError

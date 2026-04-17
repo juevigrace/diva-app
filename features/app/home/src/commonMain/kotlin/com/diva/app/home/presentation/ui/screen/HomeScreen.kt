@@ -47,6 +47,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import com.diva.ui.navigation.Navigators
 import org.koin.core.qualifier.named
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +56,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val tabNavigator: Navigator<Destination> = koinInject(named("home_tabs"))
+    val tabNavigator: Navigator<Destination> = koinInject(named(Navigators.HOME_TABS))
     val windowUtils = LocalWindowUtils.current
 
     LaunchedEffect(Unit) {

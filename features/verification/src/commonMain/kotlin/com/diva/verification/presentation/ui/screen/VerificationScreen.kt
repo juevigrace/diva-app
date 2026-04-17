@@ -65,7 +65,7 @@ fun VerificationScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.onEvent(VerificationEvents.OnSetAction(action))
+        viewModel.onEvent(VerificationEvents.OnRender(action))
     }
 
     LaunchedEffect(Unit, state.action) {

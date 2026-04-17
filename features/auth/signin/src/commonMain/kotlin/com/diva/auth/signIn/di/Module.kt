@@ -7,6 +7,7 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
+import com.diva.ui.navigation.Navigators
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -14,6 +15,6 @@ fun signInModule(): Module {
     return module {
         singleOf(::SignInRepositoryImpl) { bind<SignInRepository>() }
 
-        viewModel { SignInViewModel(get(), get(named("app_router")), get(), get()) }
+        viewModel { SignInViewModel(get(), get(named(Navigators.APP_ROUTER)), get(), get()) }
     }
 }

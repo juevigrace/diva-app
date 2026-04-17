@@ -6,7 +6,7 @@ sealed interface VerificationEvents {
     data object OnBack : VerificationEvents
     data object OnResendEnable : VerificationEvents
     data object OnRequest : VerificationEvents
-    data class OnSetAction(val action: VerificationAction) : VerificationEvents
+    data class OnRender(val action: VerificationAction) : VerificationEvents
     data object OnSubmit : VerificationEvents
     data class OnTokenChanged(val token: String) : VerificationEvents
 }

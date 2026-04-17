@@ -33,16 +33,12 @@ import com.diva.ui.components.buttons.LoadingButton
 import com.diva.ui.components.layout.ErrorLayout
 import com.diva.ui.components.layout.VerticalScrollableLayout
 import com.diva.ui.navigation.arguments.ForgotAction
-import io.github.juevigrace.diva.core.util.DivaLogger
-import io.github.juevigrace.diva.core.util.LogLevel
-import io.github.juevigrace.diva.core.util.createDivaLogger
-import io.github.juevigrace.diva.core.util.logDebug
 import io.github.juevigrace.diva.ui.components.layout.bars.top.TopNavBar
-import io.github.juevigrace.diva.ui.components.observable.ObserveFlow
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
+// TODO: i need to delete the password action if the flow is interupted,
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotScreen(
@@ -52,19 +48,13 @@ fun ForgotScreen(
     val state: ForgotState by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.onEvent(ForgotEvents.SetAction(action))
+        viewModel.onEvent(ForgotEvents.OnRender(action))
     }
 
     LaunchedEffect(Unit, state.action) {
         if (state.action !is ForgotAction.Unspecified) {
             viewModel.onEvent(ForgotEvents.OnCheckAction)
         }
-    }
-
-    ObserveFlow(
-        viewModel.state
-    ) { state ->
-        println(state)
     }
 
     if (state.action is ForgotAction.Unspecified) {

@@ -1,16 +1,16 @@
 package com.diva.auth.forgot.presentation.viewmodel
 
 import com.diva.auth.forgot.data.ForgotRepository
+import com.diva.auth.forgot.data.validation.EmailFormValidation
+import com.diva.auth.forgot.data.validation.EmailRequestValidator
+import com.diva.auth.forgot.data.validation.PasswordResetValidation
+import com.diva.auth.forgot.data.validation.PasswordResetValidator
 import com.diva.auth.forgot.presentation.events.ForgotEvents
 import com.diva.auth.forgot.presentation.state.ForgotState
 import com.diva.auth.forgot.presentation.state.ForgotStep
 import com.diva.models.actions.Actions
 import com.diva.models.auth.EmailForm
 import com.diva.models.auth.PasswordResetForm
-import com.diva.auth.forgot.data.validation.EmailFormValidation
-import com.diva.auth.forgot.data.validation.EmailRequestValidator
-import com.diva.auth.forgot.data.validation.PasswordResetValidation
-import com.diva.auth.forgot.data.validation.PasswordResetValidator
 import com.diva.ui.messages.toToast
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.SignInDestination
@@ -79,9 +79,6 @@ class ForgotViewModel(
         passwordResetFormState,
         combinedPasswordResetValidation,
     ) { state, emailForm, emailValidation, passwordForm, passwordValidation ->
-        println(state.step)
-        println(emailValidation.valid())
-        println(emailValidation.valid() && !state.submitLoading)
         state.copy(
             emailForm = emailForm,
             emailFormValidation = emailValidation,
@@ -104,7 +101,7 @@ class ForgotViewModel(
 
     fun onEvent(event: ForgotEvents) {
         when (event) {
-            is ForgotEvents.SetAction -> setAction(event.action)
+            is ForgotEvents.OnRender -> init(event.action)
             ForgotEvents.OnCheckAction -> checkAction()
             is ForgotEvents.OnEmailChanged -> emailChanged(event.email)
             is ForgotEvents.OnNewPasswordChanged -> newPasswordChanged(event.password)
@@ -115,7 +112,7 @@ class ForgotViewModel(
         }
     }
 
-    private fun setAction(action: ForgotAction) {
+    private fun init(action: ForgotAction) {
         _state.update { state -> state.copy(action = action) }
     }
 

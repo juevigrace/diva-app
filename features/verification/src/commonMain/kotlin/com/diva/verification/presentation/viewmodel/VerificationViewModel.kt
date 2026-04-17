@@ -73,10 +73,10 @@ class VerificationViewModel(
 
     fun onEvent(event: VerificationEvents) {
         when (event) {
+            is VerificationEvents.OnRender -> init(event.action)
             is VerificationEvents.OnRequest -> requestVerification()
             VerificationEvents.OnSubmit -> submit()
             VerificationEvents.OnBack -> navigator.pop()
-            is VerificationEvents.OnSetAction -> setAction(event.action)
             VerificationEvents.OnResendEnable -> enableResend()
             is VerificationEvents.OnTokenChanged -> tokenChanged(event.token)
         }
@@ -205,7 +205,7 @@ class VerificationViewModel(
         }
     }
 
-    private fun setAction(action: VerificationAction) {
+    private fun init(action: VerificationAction) {
         _state.update { state ->
             state.copy(
                 action = action,

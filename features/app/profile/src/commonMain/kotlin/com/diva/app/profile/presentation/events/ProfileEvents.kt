@@ -1,5 +1,6 @@
 package com.diva.app.profile.presentation.events
 
-sealed class ProfileEvents {
-    data object OnRender : ProfileEvents()
+sealed interface ProfileEvents {
+    data object OnRender : ProfileEvents
+    data object SignOut : ProfileEvents
 }
