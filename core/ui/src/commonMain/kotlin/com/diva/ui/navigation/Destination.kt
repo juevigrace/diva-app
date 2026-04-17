@@ -40,13 +40,13 @@ sealed interface Destination : NavKey {
         data object Profile : HomeGraph
 
         @Serializable
-        data object Dashboard : HomeGraph
-
-        @Serializable
         data object Feed : HomeGraph
 
         @Serializable
         data object Creation : HomeGraph
+
+        @Serializable
+        data object Library : HomeGraph
     }
 }
 
@@ -58,6 +58,6 @@ typealias ForgotDestination = Destination.AuthGraph.Forgot
 typealias VerificationDestination = Destination.AuthGraph.Verification
 typealias HomeDestination = Destination.HomeGraph.Home
 typealias ProfileDestination = Destination.HomeGraph.Profile
-typealias DashboardDestination = Destination.HomeGraph.Dashboard
 typealias FeedDestination = Destination.HomeGraph.Feed
 typealias CreationDestination = Destination.HomeGraph.Creation
+typealias LibraryDestination = Destination.HomeGraph.Library

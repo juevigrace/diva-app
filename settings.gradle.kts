@@ -51,7 +51,7 @@ include(
     ":features:app:home",
     ":features:app:onboarding",
     ":features:app:services",
-    ":features:app:dashboard",
+    ":features:app:library",
     ":features:app:feed",
     ":features:app:creation",
 )

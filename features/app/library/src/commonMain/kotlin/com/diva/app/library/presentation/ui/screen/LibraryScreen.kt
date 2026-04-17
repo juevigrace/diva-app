@@ -1,4 +1,4 @@
-package com.diva.app.dashboard.presentation.ui.screen
+package com.diva.app.library.presentation.ui.screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,12 +8,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.diva.app.dashboard.presentation.viewmodel.DashboardViewModel
+import com.diva.app.library.presentation.viewmodel.LibraryViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun DashboardScreen(
-    viewModel: DashboardViewModel = koinViewModel(),
+fun LibraryScreen(
+    viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -21,6 +21,6 @@ fun DashboardScreen(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text("Dashboard")
+        Text("Library")
     }
 }

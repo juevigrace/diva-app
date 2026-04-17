@@ -14,11 +14,15 @@ import com.diva.app.presentation.state.AppState
 import com.diva.app.presentation.viewmodel.AppViewModel
 import com.diva.auth.presentation.components.navigation.authEntries
 import com.diva.onboarding.presentation.ui.components.navigation.onboardingEntries
+import com.diva.ui.components.CommonBackHandler
 import com.diva.ui.navigation.Destination
+import com.diva.ui.navigation.FeedDestination
+import com.diva.ui.navigation.HomeDestination
 import com.diva.ui.theme.AppTypography
 import com.diva.ui.theme.darkScheme
 import com.diva.ui.theme.lightScheme
 import com.diva.verification.presentation.ui.components.navigation.verificationEntries
+import io.github.juevigrace.diva.core.getOrElse
 import io.github.juevigrace.diva.ui.components.layout.Screen
 import io.github.juevigrace.diva.ui.components.navigation.Navigator
 import io.github.juevigrace.diva.ui.components.toaster.LocalToaster
@@ -40,6 +44,9 @@ fun App() {
 
     val toaster: Toaster = koinInject()
     val navigator: Navigator<Destination> = koinInject(named("app_router"))
+    val backStack by navigator.backStack.collectAsStateWithLifecycle()
+    val tabNavigator: Navigator<Destination> = koinInject(named("home_tabs"))
+    val tabBackStack by tabNavigator.backStack.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.shouldNavigate, state.sessionLoading) {
         delay(1000)
@@ -47,6 +54,14 @@ fun App() {
             viewModel.handleNavigation()
         }
     }
+
+    CommonBackHandler(
+        enabled = backStack.current.getOrElse { null } == HomeDestination &&
+            tabBackStack.current.getOrElse { null } != FeedDestination,
+        onBack = {
+            tabNavigator.pop()
+        }
+    )
 
     DivaApp(
         providers = arrayOf(LocalToaster provides toaster),

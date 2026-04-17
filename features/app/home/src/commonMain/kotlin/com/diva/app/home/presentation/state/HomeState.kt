@@ -17,9 +17,9 @@ data class HomeState(
 ) {
     companion object {
         val defaultAppTabs: List<AppTabs> = listOf(
-            AppTabs.Dashboard,
-            AppTabs.Creation,
+            AppTabs.Feed,
             AppTabs.Library,
+            AppTabs.Creation,
         )
     }
 }

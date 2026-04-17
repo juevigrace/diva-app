@@ -9,7 +9,6 @@ import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.VerificationDestination
 import com.diva.ui.navigation.arguments.VerificationAction
 import com.diva.ui.navigation.bars.BottomBarState
-import com.diva.ui.navigation.tab.AppTabs
 import io.github.juevigrace.diva.core.getOrElse
 import io.github.juevigrace.diva.core.util.logError
 import io.github.juevigrace.diva.ui.navigation.Navigator
@@ -62,26 +61,35 @@ class HomeViewModel(
     fun onEvent(event: HomeEvents) {
         when (event) {
             HomeEvents.OnRender -> init()
+            is HomeEvents.OnTabUpdate -> updateTabFromRoute(event.route)
             is HomeEvents.SelectTab -> selectTab(event.tab)
             HomeEvents.ToggleDrawer -> toggleDrawer()
         }
     }
 
-    private fun selectTab(tab: Tab) {
-        when {
-            tab is AppTabs.Dashboard -> {
-                tabNavigator.replaceAll(tab.route)
-            }
-            tabNavigator.backStack.value.entries.contains(tab.route as Destination) -> {
-                if (bottomBarState.value.selectedTab.getOrElse { null } != tab) {
-                    tabNavigator.popUntil(tab as Destination)
-                }
-            }
-            else -> {
-                tabNavigator.replaceTop(tab.route as Destination)
+    private fun updateTabFromRoute(route: Destination) {
+        val tab = bottomBarState.value.tabs.find { it.route as Destination == route }
+        if (tab != null) {
+            bottomBarState.update { state ->
+                state.selectTab(tab)
             }
         }
+    }
 
+    private fun selectTab(tab: Tab) {
+        when {
+            tabNavigator.backStack.value.entries.contains(tab.route as Destination) -> {
+                if (bottomBarState.value.selectedTab.getOrElse { null } != tab) {
+                    tabNavigator.popUntil(tab.route as Destination)
+                }
+            }
+            tabNavigator.backStack.value.entries.size >= 2 -> {
+                tabNavigator.replaceTop(tab.route as Destination)
+            }
+            else -> {
+                tabNavigator.navigate(tab.route as Destination)
+            }
+        }
         bottomBarState.update { state ->
             state.selectTab(tab)
         }

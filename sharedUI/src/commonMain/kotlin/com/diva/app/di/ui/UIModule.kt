@@ -1,7 +1,6 @@
 package com.diva.app.di.ui
 
-import com.diva.ui.navigation.DashboardDestination
-import com.diva.ui.navigation.Destination
+import com.diva.ui.navigation.FeedDestination
 import com.diva.ui.navigation.SplashDestination
 import io.github.juevigrace.diva.ui.navigation.Navigator
 import io.github.juevigrace.diva.ui.toast.Toaster
@@ -18,7 +17,7 @@ fun uiModule(): Module {
             Navigator.newInstance(SplashDestination)
         }
         single(named("home_tabs")) {
-            Navigator.newInstance(DashboardDestination)
+            Navigator.newInstance(FeedDestination)
         }
     }
 }
