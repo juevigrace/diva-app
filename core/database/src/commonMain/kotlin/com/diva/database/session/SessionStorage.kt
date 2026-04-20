@@ -15,6 +15,8 @@ interface SessionStorage {
 
     suspend fun getCurrentSessionFlow(): Flow<Result<Option<Session>>>
 
+    suspend fun getTemporal(): Result<Option<Session>>
+
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getById(id: Uuid): Result<Option<Session>>
 

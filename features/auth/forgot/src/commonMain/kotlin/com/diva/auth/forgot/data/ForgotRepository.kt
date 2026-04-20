@@ -33,7 +33,7 @@ class ForgotRepositoryImpl(
                         logError(this::class.simpleName ?: "ForgotRepository", err.toString())
                     }
 
-                    sessionRepository.closeCurrent().onFailure { err ->
+                    sessionRepository.logout().onFailure { err ->
                         logError(this::class.simpleName ?: "ForgotRepository", err.toString())
                     }
                 }

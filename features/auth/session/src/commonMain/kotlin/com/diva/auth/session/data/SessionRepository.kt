@@ -18,13 +18,17 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlin.fold
 import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 interface SessionRepository : Repository {
     suspend fun getCurrent(): Result<Session>
     fun observeCurrent(): Flow<Result<Session>>
+    suspend fun getTemporal(): Result<Session>
     suspend fun ping(): Result<Unit>
     suspend fun logout(): Result<Unit>
-    suspend fun closeCurrent(): Result<Unit>
+    suspend fun logoutTemporal(): Result<Unit>
+    @OptIn(ExperimentalUuidApi::class)
+    suspend fun close(id: Uuid): Result<Unit>
     suspend fun refresh(): Result<Unit>
     suspend fun newSession(session: Session): Result<Unit>
 }
@@ -79,6 +83,26 @@ class SessionRepositoryImpl(
         }.flowOn(Dispatchers.IO)
     }
 
+    override suspend fun getTemporal(): Result<Session> {
+        return storage.getTemporal().fold(
+            onFailure = { err -> Result.failure(err) },
+            onSuccess = { option ->
+                option.fold(
+                    onNone = {
+                        Result.failure(
+                            ConstraintException(
+                                field = "session",
+                                constraint = "missing",
+                                value = "no session found"
+                            )
+                        )
+                    },
+                    onSome = { value -> Result.success(value) }
+                )
+            }
+        )
+    }
+
     override suspend fun ping(): Result<Unit> {
         return withSession(::getCurrent) { session ->
             api.ping(session.accessToken).fold(
@@ -118,19 +142,34 @@ class SessionRepositoryImpl(
 
                 return@withSession Result.failure(err)
             }
-            closeCurrent()
+            close(session.id)
         }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun closeCurrent(): Result<Unit> {
-        return withSession(::getCurrent) { session ->
-            storage.delete(session.id).onFailure { err ->
+    override suspend fun logoutTemporal(): Result<Unit> {
+        return withSession(::getTemporal) { session ->
+            api.signOut(
+                dto = session.data.toSessionDataDto(),
+                token = session.accessToken
+            ).onFailure { err ->
+                if (err is HttpException &&
+                    err.statusCode.getOrElse {
+                        HttpStatusCode.InternalServerError
+                    } == HttpStatusCode.Unauthorized.value
+                ) {
+                    return@onFailure
+                }
+
                 return@withSession Result.failure(err)
             }
-
-            Result.success(Unit)
+            close(session.id)
         }
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun close(id: Uuid): Result<Unit> {
+        return storage.delete(id)
     }
 
     @OptIn(ExperimentalUuidApi::class)

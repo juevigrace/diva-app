@@ -1,6 +1,6 @@
 insert:
-INSERT INTO diva_session (id, user_id, access_token, refresh_token, device, status, ip_address, user_agent, expires_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO diva_session (id, user_id, access_token, refresh_token, device,type, status, ip_address, user_agent, expires_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE diva_session 
@@ -23,6 +23,7 @@ SELECT
     s.id,
     s.access_token AS accessToken,
     s.refresh_token AS refreshToken,
+    s.type,
     s.device,
     s.status,
     s.ip_address AS ipAddress,
@@ -46,6 +47,7 @@ SELECT
   s.id,
   s.access_token AS accessToken,
   s.refresh_token AS refreshToken,
+  s.type,
   s.device,
   s.status,
   s.ip_address AS ipAddress,
@@ -67,6 +69,7 @@ SELECT
   s.id,
   s.access_token AS accessToken,
   s.refresh_token AS refreshToken,
+  s.type,
   s.device,
   s.status,
   s.ip_address AS ipAddress,
@@ -83,6 +86,7 @@ SELECT
   s.id,
   s.access_token AS accessToken,
   s.refresh_token AS refreshToken,
+  s.type,
   s.device,
   s.status,
   s.ip_address AS ipAddress,
@@ -99,3 +103,20 @@ FROM diva_session s
 LEFT JOIN diva_user u
 ON u.id = s.user_id
 WHERE s.is_current = 1;
+
+findTemporal:
+SELECT
+  s.id,
+  s.access_token AS accessToken,
+  s.refresh_token AS refreshToken,
+  s.type,
+  s.device,
+  s.status,
+  s.ip_address AS ipAddress,
+  s.user_agent AS userAgent,
+  s.expires_at AS expiresAt,
+  s.created_at AS createdAt,
+  s.updated_at AS updatedAt,
+  s.user_id AS userId
+FROM diva_session s
+WHERE s.is_current = 1 AND s.type = "TEMPORAL";

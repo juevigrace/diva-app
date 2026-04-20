@@ -2,7 +2,9 @@ package com.diva.models.auth
 
 import com.diva.models.api.auth.session.response.SessionResponse
 import com.diva.models.session.SessionStatus
+import com.diva.models.session.SessionType
 import com.diva.models.session.safeSessionStatus
+import com.diva.models.session.safeSessionType
 import com.diva.models.user.User
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -15,6 +17,7 @@ data class Session(
     val user: User,
     val accessToken: String,
     val refreshToken: String,
+    val type: SessionType = SessionType.NORMAL,
     val status: SessionStatus,
     val isCurrent: Boolean = false,
     val data: SessionData,
@@ -23,22 +26,6 @@ data class Session(
     val createdAt: Instant,
     val updatedAt: Instant,
 ) {
-    fun toResponse(): SessionResponse {
-        return SessionResponse(
-            sessionId = id.toString(),
-            userId = user.id.toString(),
-            accessToken = accessToken,
-            refreshToken = refreshToken,
-            status = status.name,
-            device = data.device,
-            ip = data.ip,
-            agent = data.agent,
-            expiresAt = expiresAt.toEpochMilliseconds(),
-            createdAt = createdAt.toEpochMilliseconds(),
-            updatedAt = updatedAt.toEpochMilliseconds(),
-        )
-    }
-
     companion object {
         fun fromResponse(response: SessionResponse): Session {
             return Session(
@@ -46,6 +33,7 @@ data class Session(
                 user = User(id = Uuid.parse(response.userId)),
                 accessToken = response.accessToken,
                 refreshToken = response.refreshToken,
+                type = safeSessionType(response.type),
                 status = safeSessionStatus(response.status),
                 data = SessionData(
                     device = response.device,

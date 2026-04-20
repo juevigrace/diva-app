@@ -31,6 +31,7 @@ fun databaseModule(): Module {
                     driver = driver,
                     diva_sessionAdapter = Diva_session.Adapter(
                         statusAdapter = EnumColumnAdapter(),
+                        typeAdapter = EnumColumnAdapter(),
                     ),
                     diva_userAdapter = Diva_user.Adapter(
                         roleAdapter = EnumColumnAdapter(),

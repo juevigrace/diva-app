@@ -5,6 +5,7 @@ import com.diva.database.session.SessionStorage
 import com.diva.models.auth.Session
 import com.diva.models.auth.SessionData
 import com.diva.models.session.SessionStatus
+import com.diva.models.session.SessionType
 import com.diva.models.user.User
 import io.github.juevigrace.diva.core.Option
 import io.github.juevigrace.diva.core.database.DatabaseOperation
@@ -68,6 +69,22 @@ class SessionStorageImpl(
         }
     }
 
+    override suspend fun getTemporal(): Result<Option<Session>> {
+        return db.getOne {
+            sessionQueries.findTemporal(mapper = ::mapToEntity)
+        }.fold(
+            onFailure = { err -> Result.failure(err) },
+            onSuccess = { opt ->
+                opt.fold(
+                    onNone = { Result.success(Option.None) },
+                    onSome = { s ->
+                        Result.success(Option.Some(s))
+                    }
+                )
+            }
+        )
+    }
+
     override suspend fun getAll(limit: Int, offset: Int): Result<List<Session>> {
         return db.getList { sessionQueries.findAll(limit.toLong(), offset.toLong(), mapper = ::mapToEntity) }
     }
@@ -98,6 +115,7 @@ class SessionStorageImpl(
                     user_id = item.user.id.toString(),
                     access_token = item.accessToken,
                     refresh_token = item.refreshToken,
+                    type = item.type,
                     status = item.status,
                     device = item.data.device,
                     ip_address = item.data.ip,
@@ -216,6 +234,7 @@ class SessionStorageImpl(
         id: String,
         accessToken: String,
         refreshToken: String,
+        type: SessionType,
         device: String,
         status: SessionStatus,
         ipAddress: String,
@@ -240,6 +259,7 @@ class SessionStorageImpl(
             ),
             accessToken = accessToken,
             refreshToken = refreshToken,
+            type = type,
             status = status,
             data = SessionData(
                 device = device,

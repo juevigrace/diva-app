@@ -13,3 +13,16 @@ fun safeSessionStatus(value: String): SessionStatus {
         SessionStatus.EXPIRED
     }
 }
+
+enum class SessionType {
+    NORMAL,
+    TEMPORAL
+}
+
+fun safeSessionType(value: String): SessionType {
+    return try {
+        SessionType.valueOf(value)
+    } catch (_: IllegalArgumentException) {
+        SessionType.NORMAL
+    }
+}

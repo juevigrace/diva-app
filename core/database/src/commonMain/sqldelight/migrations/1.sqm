@@ -2,6 +2,7 @@ import com.diva.models.Theme;
 import com.diva.models.actions.Actions;
 import com.diva.models.roles.Role;
 import com.diva.models.session.SessionStatus;
+import com.diva.models.session.SessionType;
 import kotlin.Boolean;
 
 CREATE TABLE IF NOT EXISTS diva_user(
@@ -47,6 +48,7 @@ CREATE TABLE IF NOT EXISTS diva_session(
     refresh_token TEXT NOT NULL,
     device TEXT NOT NULL DEFAULT '',
     is_current INTEGER AS Boolean NOT NULL DEFAULT 0,
+    type TEXT AS SessionType NOT NULL,
     status TEXT AS SessionStatus NOT NULL,
     ip_address TEXT NOT NULL DEFAULT '',
     user_agent TEXT NOT NULL DEFAULT '',

@@ -31,11 +31,10 @@ class AppViewModel(
 
     init {
         scope.launch {
+            repository.clear()
+            handleSession()
             launch {
                 handleGetPreferences()
-            }
-            launch {
-                handleSession()
             }
         }
     }

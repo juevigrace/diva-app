@@ -13,6 +13,8 @@ data class SessionResponse(
     val accessToken: String,
     @SerialName("refresh_token")
     val refreshToken: String,
+    @SerialName("type")
+    val type: String,
     @SerialName("status")
     val status: String,
     @SerialName("device")

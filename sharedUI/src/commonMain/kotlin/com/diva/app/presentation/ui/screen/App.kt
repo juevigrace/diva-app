@@ -18,6 +18,7 @@ import com.diva.ui.components.CommonBackHandler
 import com.diva.ui.navigation.Destination
 import com.diva.ui.navigation.FeedDestination
 import com.diva.ui.navigation.HomeDestination
+import com.diva.ui.navigation.Navigators
 import com.diva.ui.theme.AppTypography
 import com.diva.ui.theme.darkScheme
 import com.diva.ui.theme.lightScheme
@@ -35,7 +36,6 @@ import io.github.juevigrace.diva.ui.toast.Toaster
 import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import com.diva.ui.navigation.Navigators
 import org.koin.core.qualifier.named
 
 @Composable
