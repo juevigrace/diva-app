@@ -7,7 +7,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.diva.${cleanPath()}"
 
         compileSdk = libs.versions.android.compileSdk.get().toInt()
